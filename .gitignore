@@ -1,0 +1,20 @@
+# Misc Directories #
+####################
+Intro
+
+# Docker Config #
+#################
+docker-compose.yml
+
+# Root Tex #
+############
+*.tex
+projects/project*/*.aux
+projects/project*/*.log
+projects/project*/*.console
+homeworks/homework*/*.aux
+homeworks/homework*/*.log
+
+# Binaries #
+############
+!*.*
