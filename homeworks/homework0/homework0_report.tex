@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+
+\usepackage[lmargin=0.75in, rmargin=1in, tmargin=1.25in, bmargin=1in]{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage[labelsep=period]{caption}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage[svgnames]{xcolor}
+\usepackage{hyperref}
+
+% For formatting C++ code listings ---------------------------
+\lstdefinestyle{customCpp}{
+    language=C++,
+    keywordstyle=\color{RoyalBlue},
+    basicstyle=\footnotesize\ttfamily,
+    commentstyle=\color{Green}\ttfamily,
+    rulecolor=\color{black},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame = tb,
+    belowcaptionskip=5pt,
+    belowskip=3em,
+    gobble=10,
+}
+
+% For turning enumerated lists into Problem titles --------------
+\renewcommand{\labelenumi}{\textbf{Problem \arabic{enumi}}}
+\renewcommand{\labelenumii}{(\alph{enumii})}
+
+% hyperlink settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+
+% Enumerated list indents:
+% Problems:    [leftmargin=0.9in]
+% Subproblems: [leftmargin=0.3in]
+
+
+% Document Details ----------------------------------------------
+\author{Eli Case}
+\title{MECH 450 -- Homework 0}
+\date{August 24, 2023}
+\makeatletter
+
+
+% Setup headers -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{} % Clear the headers and footers
+\lhead{\@author}
+\chead{\@title}
+\rhead{\@date}
+\cfoot{Page \thepage\ of \pageref{LastPage}}
+\setlength{\headheight}{15pt}
+\setlength{\headsep}{20pt}
+
+\fancypagestyle{plain}{
+	\fancyhf{}
+	\setlength{\headheight}{15pt}
+	\setlength{\headsep}{0pt}
+	\renewcommand{\headrulewidth}{0pt}
+	\cfoot{\vspace{2mm}Page \thepage\ of \pageref{LastPage}}
+}
+
+
+\begin{document}
+\flushleft
+\thispagestyle{plain}
+
+From: \@author
+
+Date: \@date
+
+Subject: \@title
+
+\makeatother
+\medskip
+\hrule
+\medskip
+
+   I read about the EcoFlow BLADE Robotic Lawn Mower. A promotional video of the lawn mower is linked \href{https://www.youtube.com/watch?v=vbIWNvkncE8}{here}.
+   
+   \vspace{10px}
+
+   This robot is made by EcoFlow, a company founded in 2017 that designs portable power products, solar technology, and smart home energy solutions. The EcoFlow BLADE is a recent product that is part of the SmartDevices. BLADE is able to mow a yard with minimal setup and oversight. As, shown in the video it is capable of mowing in straight lines and has obstacle detection for common obstacles like bushes, trees, pathways, etc. 
+   
+   \vspace{10px}
+
+   This robot uses a user-input moving boundary to define the space of the yard to be mowed. It uses embedded senors in the mower and external sensors placed in the yard for navigation and obstacle detection. The mower is also able to detect weather conditions to only deploy when the grass is dry and in a condition to be cut. Lastly, the mower is able to trim grass at a specified blade height. This product is interesting to me because it introduces more autonomous features than comparable mowers, particularly the ability to remember a user-defined yard boundary after initial setup.
+
+\end{document}
