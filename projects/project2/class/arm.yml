@@ -1,0 +1,97 @@
+robot:
+  - name: "base"
+    tip: [0, 2, 0]
+    geometry:
+      - type: "box"
+        dimensions: [0.15, 1.1]
+        color: [0.5, 0.5, 0.5, 1]
+        offset: [0, -0.9, 0]
+
+  - name: "link_1"
+    joint: "continuous"
+    parent: "base"
+    tip: [-1, 1, 3.14159]
+    allowed: ["base"]
+    geometry:
+      - type: "circle"
+        dimensions: [0.1]
+        color: [0.2, 0.2, 0.2, 1]
+        offset: [-1, 1, 0]
+      - type: "box"
+        dimensions: [0.7, 0.15]
+        color: [0.5, 0.5, 0.5, 1]
+        offset: [-1, 0.6, 1.5708]
+
+  - name: "link_1_bar"
+    joint: "prismatic"
+    limits:
+      upper: 0.5
+      lower: -0.5
+    parent: "link_1"
+    allowed: ["link_1"]
+    tip: [0, 0, 0]
+    geometry:
+      - type: "box"
+        dimensions: [1.2, 0.15]
+        color: [0.5, 0.5, 0.5, 1]
+        offset: [-1, 0, 0]
+
+  - name: "link_2"
+    joint: "continuous"
+    parent: "link_1_bar"
+    allowed: ["link_1_bar"]
+    tip: [1.2, 0, 0]
+    geometry:
+      - type: "circle"
+        dimensions: [0.1]
+        color: [0.2, 0.2, 0.2, 1]
+        offset: [-1.2, 0, 0]
+      - type: "box"
+        dimensions: [0.8, 0.15]
+        color: [0.5, 0.5, 0.5, 1]
+        offset: [-0.6, 0, 0]
+
+  - name: "link_3"
+    joint: "continuous"
+    parent: "link_2"
+    allowed: ["link_2"]
+    tip: [1.2, 0, 0]
+    geometry:
+      - type: "circle"
+        dimensions: [0.1]
+        color: [0.2, 0.2, 0.2, 1]
+        offset: [-1.2, 0, 0]
+      - type: "box"
+        dimensions: [0.8, 0.05]
+        color: [0.5, 0.5, 0.5, 1]
+        offset: [-0.6, 0, 0]
+
+  - name: "triangle_1"
+    geometry:
+      - type: "convex"
+        points:
+          - [0.0, 0.0]
+          - [1., 0.0]
+          - [0.5, 1.5]
+        offset: [-1.8, 0, 0]
+        color: [0.3, 0., 0., 1]
+
+  - name: "triangle_2"
+    geometry:
+      - type: "convex"
+        points:
+          - [0.0, 0.0]
+          - [1., 0.0]
+          - [0.5, 3]
+        offset: [-1.5, 5, 3.14]
+        color: [0., 0.3, 0., 1]
+
+  - name: "triangle_3"
+    geometry:
+      - type: "convex"
+        points:
+          - [0.0, 0.0]
+          - [0.6, 0.0]
+          - [0.3, 1.6]
+        offset: [0.5, 5, 3.14]
+        color: [0., 0., 0.3, 1]
