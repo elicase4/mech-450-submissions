@@ -3,8 +3,8 @@ robot:
   - name: "robot1"
     joint: "flying"
     limits:
-      upper: [ 10,  10]
-      lower: [-10, -10]
+      upper: [ 2,  2]
+      lower: [-2, -2]
     geometry:
       - type: "box"
         dimensions: [0.05, 0.5]
