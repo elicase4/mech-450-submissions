@@ -1,0 +1,131 @@
+robot:
+  - name: "base"
+    joint: "flying"
+    limits:
+        upper: [10,10]
+        lower: [-10,-10]
+    parent: "root"
+    tip: [0, 0, 0]
+    geometry:
+      - type: "circle"
+        dimensions: [0.3]
+        color: [0.2, 0.2, 0.2, 1]
+        offset: [0, 0, 0]
+
+  - name: "link_1"
+    joint: "continuous"
+    parent: "base"
+    tip: [2.5, 0, 0]
+    allowed: ["base"]
+    geometry:
+      - type: "convex"
+        points:
+          - [-1, 0.5]
+          - [-1, -0.5]
+          - [3, -0.4]
+          - [3, 0.4]
+        offset: [-2.5, 0, 0]
+        color: [0.7, 0.3, 1.0, 1]
+  
+  - name: "link_2"
+    joint: "continuous"
+    parent: "link_1"
+    tip: [2.5, 0, 0]
+    allowed: ["link_1", "base"]
+    geometry:
+      - type: "convex"
+        points:
+          - [-0.5, 0.4]
+          - [-0.5, -0.4]
+          - [3, -0.25]
+          - [3, 0.25]
+        offset: [-2.5, 0, 0]
+        color: [0.7, 0.3, 1.0, 1]
+      - type: "circle"
+        dimensions: [0.1]
+        color: [0.2, 0.2, 0.2, 1]
+        offset: [-2.5, 0, 0]
+
+  - name: "obstacle_1"
+    tip: [-0.2, 3.5, 0]
+    geometry:
+      - type: "convex"
+        points:
+          - [0, 0]
+          - [1, 0]
+          - [1, 1.8]
+        color: [0.5, 0.2, 0.2, 1]
+
+  - name: "obstacle_2_upper"
+    tip: [3.5, 2.75, 0]
+    geometry:
+      - type: "box"
+        dimensions: [0.5, 2]
+        color: [0.2, 0.5, 0.2, 1]
+      - type: "box"
+        dimensions: [0.4, 0.8]
+        offset: [-0.5, 0, 0]
+        color: [0.2, 0.5, 0.2, 1]
+
+  - name: "obstacle_2_lower"
+    tip: [3.5, -2.75, 0]
+    geometry:
+      - type: "box"
+        dimensions: [0.5, 2]
+        color: [0.2, 0.5, 0.2, 1]
+      - type: "box"
+        dimensions: [2.5, 0.8]
+        offset: [-1, 0, 0]
+        color: [0.2, 0.5, 0.2, 1]
+        
+  - name: "obstacle_3"
+    tip: [3.5, -2, 0]
+    geometry:
+      - type: "convex"
+        points:
+          - [0, 0]
+          - [1, 0]
+          - [1, 1]
+          - [0.5, 1.2]
+          - [0, 1]
+        color: [0.5, 0.5, 0.2, 1]
+
+  - name: "bbox"
+    geometry:
+      - type: "box"
+        dimensions: [5, 0.1]
+        offset: [3, 5, 0]
+        color: [0.5, 0.2, 0.5, 1]
+      - type: "box"
+        dimensions: [5, 0.1]
+        offset: [3, -5, 0]
+        color: [0.5, 0.2, 0.5, 1]
+      - type: "box"
+        dimensions: [0.1, 5]
+        offset: [-2, 0, 0]
+        color: [0.5, 0.2, 0.5, 1]
+      - type: "box"
+        dimensions: [0.1, 5]
+        offset: [8, 0, 0]
+        color: [0.5, 0.2, 0.5, 1]
+
+states:
+  
+  - name: "start"
+    configuration:
+      - frame: "link_1"
+        value: [0.880]
+      - frame: "link_2"
+        value: [-2.011]
+      - frame: "base"
+        value: [1.6, 3.6, 3.079]
+  
+  - name: "goal"
+    configuration:
+      - frame: "link_1"
+        value: [1.382]
+      - frame: "link_2"
+        value: [-2.827]
+      - frame: "base"
+        value: [6.4, -1.6, 3.042]
+       
