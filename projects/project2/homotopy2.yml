@@ -1,0 +1,48 @@
+# Two-link robot with 2 revolute joints
+robot:
+  - name: "robot_2"
+    joint: "fixed"
+    parent: "root"
+    tip: [0., 0., 0.]
+    geometry:
+      - type: "box"
+        dimensions: [0.05, 0.2]
+
+  - name: "link_1"
+    joint: "revolute"
+    limits:
+      upper: 3.14159
+      lower: -3.14159
+    parent: "robot_2"
+    allowed: ["robot_2"]
+    geometry: 
+      - type: "circle"
+        dimensions: [0.05]
+        offset: [0, 0, 0]
+      - type: "box"
+        dimensions: [2.5, 0.05]
+        offset: [0, -2.0, 1.57]
+
+  - name: "link_2"
+    joint: "fixed"
+    parent: "link_1"
+    allowed: ["link_1"]
+    tip: [0., -4.4, 1.5708]
+    geometry:
+      - type: "box"
+        dimensions: [0.05, 0.1]
+  
+  - name: "link_3"
+    joint: "revolute"
+    limits:
+      upper: 3.14159
+      lower: -3.14159
+    parent: "link_2"
+    allowed: ["link_1", "link_2"]
+    geometry: 
+      - type: "circle"
+        dimensions: [0.05]
+        offset: [0, 0, 0]
+      - type: "box"
+        dimensions: [2.5, 0.05]
+        offset: [0, -2.0, 1.57]

@@ -1,1 +1,89 @@
+# Two-link robot with 1 revolute and 1 prismatic joint
 robot:
+  - name: "bug_2"
+    joint: "fixed"
+    parent: "root"
+    tip: [0, 0, 0]
+    geometry: 
+      - type: "box"
+        dimensions: [0.05, 0.5]
+
+  - name: "link_1"
+    joint: "revolute"
+    limits: 
+      upper: 3.14159
+      lower: -3.14159
+    parent: "bug_2"
+    tip: [-1, 1, 3.14159]
+    allowed: ["bug_2"]
+    geometry:
+      - type: "circle"
+        dimensions: [0.05]
+        offset: [-1, 1, 0]
+      - type: "box"
+        dimensions: [2.5, 0.05]
+        offset: [-1, -0.25, 1.5708]
+
+  - name: "link_2"
+    joint: "prismatic"
+    limits:
+      upper: 2.0
+      lower: -2.0
+    parent: "link_1"
+    allowed: ["link_1"]
+    tip: [0, -2.75, 0]
+    geometry:
+      - type: "box"
+        dimensions: [2.5, 0.15]
+        offset: [-1, 0, 0]
+
+# Bug trap obstacles
+  - name: "triangle_1"
+    geometry:
+    - type: "convex"
+      points:
+        - [-2.0, 0.0]
+        - [-2.0, 3.0]
+        - [-0.5, 0.3]
+
+  - name: "box_1"
+    geometry:
+      - type: "box"
+        dimensions: [1.0, 0.1]
+        offset: [3.5, 2.5, 5.5]
+  
+  - name: "box_2"
+    geometry:
+      - type: "box"
+        dimensions: [1.25, 0.1]
+        offset: [-0.25, 6.0, 3.8]
+
+  - name: "box_3"
+    geometry:
+      - type: "box"
+        dimensions: [0.5, 0.1]
+        offset: [4.6, -3.0, 0]
+  
+  - name: "triangle_2"
+    geometry:
+    - type: "convex"
+      points:
+        - [0.5, -0.1]
+        - [1., -0.5]
+        - [0.5, -0.6]
+
+# Start and end goal
+states:
+  - name: "start"
+    configuration: 
+    - frame: "link_1"
+      value: [0.0]
+    - frame: "link_2"
+      value: [0.0]
+
+  - name: "goal"
+    configuration: 
+    - frame: "link_1"
+      value: [-1.634]
+    - frame: "link_2"
+      value: [-2.0]
