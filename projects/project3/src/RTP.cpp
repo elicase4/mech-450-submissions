@@ -210,3 +210,31 @@ ompl::base::PlannerStatus ompl::control::RTP::solve(const base::PlannerTerminati
 
     return {solved, approximate};
 }
+
+void ompl::control::RRT::getPlannerData(base::PlannerData &data) const
+{
+    Planner::getPlannerData(data);
+
+    std::vector<Motion *> motions;
+    if (nn_)
+        nn_->list(motions);
+
+    double delta = siC_->getPropagationStepSize();
+
+    if (lastGoalMotion_)
+        data.addGoalVertex(base::PlannerDataVertex(lastGoalMotion_->state));
+
+    for (auto m : motions)
+    {
+        if (m->parent)
+        {
+            if (data.hasControls())
+                data.addEdge(base::PlannerDataVertex(m->parent->state), base::PlannerDataVertex(m->state),
+                             control::PlannerDataEdgeControl(m->control, m->steps * delta));
+            else
+                data.addEdge(base::PlannerDataVertex(m->parent->state), base::PlannerDataVertex(m->state));
+        }
+        else
+            data.addStartVertex(base::PlannerDataVertex(m->state));
+    }
+}
