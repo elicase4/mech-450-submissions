@@ -132,12 +132,12 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     obstacles.clear();
     
     // Define the obstacles
-    Rectange obstacle1 = {-0.5, -1.0, 0.2, 1.4};
-    Rectange obstacle2 = {-0.4, 0.6, 0.2, 0.4};
-    Rectange obstacle3 = {0.0, -1.0, 0.2, 0.7};
-    Rectange obstacle4 = {0.0, -0.1, 0.2, 1.1};
-    Rectange obstacle5 = {0.4, 0.3, 0.6, 0.2};
-    Rectange obstacle6 = {0.5, 0.6, 0.2, 0.4};
+    Rectangle obstacle1 = {-0.5, -1.0, 0.2, 1.4};
+    Rectangle obstacle2 = {-0.4, 0.6, 0.2, 0.4};
+    Rectangle obstacle3 = {0.0, -1.0, 0.2, 0.7};
+    Rectangle obstacle4 = {0.0, -0.1, 0.2, 1.1};
+    Rectangle obstacle5 = {0.4, 0.3, 0.6, 0.2};
+    Rectangle obstacle6 = {0.5, 0.6, 0.2, 0.4};
 
     // Add the new obstacles to the obstacle vector 
     obstacles.push_back(obstacle1); 
