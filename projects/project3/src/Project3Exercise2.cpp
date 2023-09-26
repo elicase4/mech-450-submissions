@@ -15,6 +15,7 @@
 void planPoint(const std::vector<Rectangle> &obstacles)
 {
     // TODO: Use your implementation of RTP to plan for a point robot.
+   
 }
 
 void planBox(const std::vector<Rectangle> &obstacles)

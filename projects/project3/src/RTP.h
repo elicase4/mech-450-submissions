@@ -25,7 +25,7 @@ namespace ompl
         // the following is taken from RRT.h and edited down for our use.
 
           class RTP : public base::Planner
-        {
+          {
 
             public:
 
