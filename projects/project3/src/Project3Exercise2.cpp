@@ -1,7 +1,7 @@
 ///////////////////////////////////////
 // COMP/ELEC/MECH 450/550
 // Project 3
-// Authors: FILL ME OUT!!
+// Authors: Santi Parra-Vargas, Eli Case
 //////////////////////////////////////
 
 /* Change log*/
@@ -16,17 +16,80 @@
 
 void planPoint(const std::vector<Rectangle> &obstacles)
 {
-    // TODO: Use your implementation of RTP to plan for a point robot.
-   
+    // Create a 2D real vector state space
+    auto space(std::make_shared<ompl::base::RealVectorStateSpace>(2));
+
+    // Set the bounds
+    ompl::base::RealVectorBounds bounds(2);
+    bounds.setLow(-1.0);
+    bounds.setHigh(1.0);
+    space->setBounds(bounds);
+
+    // Create an instance of space information for the state space
+    auto si(std::make_shared<ompl::base::SpaceInformation>(space);
+
+    // Set the state validity checker
+    si->setStateValidityChecker( [] (const State* state) -> bool
+        return isStateValidPoint(state, obstacles); 
+    ); 
+    
+    // Create start state
+    ompl::base::ScopedState<> start(space);
+    start->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = -0.7;
+    start->as<ompl::base::RealVectorStateSpace::StateType>()->values[1] = -0.8;
+    
+    // Create goal state
+    ompl::base::ScopedState<> goal(space); 
+    goal->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = 0.8;
+    goal->as<ompl::base::RealVectorStateSpace::StateType>()->values[1] = 0.8;
+
+    // Create problem instance
+    auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si));
+
+    // Set the start and goal states
+    pdef->setStartAndGoalStates(start, goal);
+
+    // Create the RTP planner for the defined space
+    auto planner(std::make_shared<ompl::geometric::RTP>(si));
+
+    // Give the problem definition to the RTP planner
+    planner->setProblemDefinition(pdef);
+
+    // Perform the setup steps for the planner
+    planner->setup();
+
+    // Print the setting used for the space information
+    si->printSettings(std::cout);
+
+    // Print the problem settings
+    pdef->print(std::cout);
+
+    // Request to solve the problem within thirty seconds of planning time
+    ompl::base::PlannerStatus solved = planner->ompl::base::Planner::solve(30.0);
+
+    if (solved)
+    {
+        // get the goal information from pdef and inquire about the solution path
+        ompl::base::PathPtr path = pdef->getSolutionPath();
+        std::cout << "Solution path was found:" << std::endl;
+
+        // placeholder print path to screen (later, can put an output stream to a textfile
+        // for visualization, once we know the RTP implementation is correct)
+        path->print(std::cout);
+    }
+    else
+    {
+        std::cout << "No solution was found." << std::endl;
+    }
 }
 
 void planBox(const std::vector<Rectangle> &obstacles)
-{
 {
     // Define the state space, space information, and problem definition
 
     // Create a 2D real vector state space
     auto space(std::make_shared<ompl::base::RealVectorStateSpace>(2));
+    // auto space(std::make_shared<ompl::base::SE2StateSpace>()); maybe use this to include rotation?
 
     // Set bounds for the state space as needed
     ompl::base::RealVectorBounds bounds(2);
@@ -62,18 +125,31 @@ void planBox(const std::vector<Rectangle> &obstacles)
         std::cout << "Box robot planning failed." << std::endl;
     }
 }
-}
 
 void makeEnvironment1(std::vector<Rectangle> &obstacles)
 {
-    // TODO: Fill in the vector of rectangles with your first environment.
+    // Initialize obstacles vector as empty
+    obstacles.clear();
     
+    // Define the obstacles
+    Rectange obstacle1 = {-0.5, -1.0, 0.2, 1.4};
+    Rectange obstacle2 = {-0.4, 0.6, 0.2, 0.4};
+    Rectange obstacle3 = {0.0, -1.0, 0.2, 0.7};
+    Rectange obstacle4 = {0.0, -0.1, 0.2, 1.1};
+    Rectange obstacle5 = {0.4, 0.3, 0.6, 0.2};
+    Rectange obstacle6 = {0.5, 0.6, 0.2, 0.4};
+
+    // Add the new obstacles to the obstacle vector 
+    obstacles.push_back(obstacle1); 
+    obstacles.push_back(obstacle2); 
+    obstacles.push_back(obstacle3); 
+    obstacles.push_back(obstacle4); 
+    obstacles.push_back(obstacle5); 
+    obstacles.push_back(obstacle6); 
 }
 
 void makeEnvironment2(std::vector<Rectangle> &obstacles)
 {
-    // TODO: Fill in the vector of rectangles with your second environment.
-
     // Define the obstacles for environment 2
     Rectangle obstacle1 = {1.0, 1.0, 0.2, 0.4};
     Rectangle obstacle2 = {2.0, 2.5, 0.3, 0.2};
