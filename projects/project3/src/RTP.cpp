@@ -11,10 +11,21 @@ Most recent changes:
 Santi -- added the files to the repo, started looking at project details. 9/19/23 1:45pm
 Eli -- reorganized file tree to match the makefile. 9/24/23 - 4:15 pm
 Added information from RRT.cpp and edited down for our use. Further testing needed. -- Santi, 9/25/23, 5:21pm
+Rewrote portions of code to help it compile and reverted some changes. Added comments to each line for understanding. -- Santi, 9/26/23, 1:31pm
+
+
+Notes to the instructors:
+=========================
+	- The bulk of this code was taken from the available OMPL documentation on Github, per the suggestion in the project file.
+	  We made some changes to the code to make it applicable to our application, such as removing all instances of intermediate
+	  state calculations, since RTP does not need this.
+	- We don't quite understand absolutely everything that's going on, but we tried our best to comment each line with what we coudl understand.
+	- We've made similar changes to the RRT.h file to get our RTP.h file.
+
 All changes made (also applied to the .h file):
-    - renamed all Motion variables to Nodes (for easier visualization per piazza suggestions)
     - renamed RRT --> RTP
     - removed all instances of intermediate states, since our planner doesn't use that.
+    - added new NodeVec vector variable for node storage
 */
 
 /* Instructions
@@ -27,214 +38,214 @@ the closest state to the goal in the tree. Your planner does not need to know th
 of the robot or the environment, or the exact C-space it is planning in. These concepts are 
 abstracted away in OMPL so that planners can be implemented generically.*/
 
-#include "RTP.h" // I assume the two files are in the src file.
+#include "RTP.h"
 
-// I assume these files remain the same...?
+/* These were taken straight from RRT.cpp, since they're required for certain functions. */
+#include <limits>
 #include "ompl/base/goals/GoalSampleableRegion.h"
 #include "ompl/tools/config/SelfConfig.h"
-#include <limits>
 
+/* Define the planner. This was taken from the RRT.cpp file and edited to remove all intermediate states instances. */
+ompl::geometric::RTP::RTP(const ompl::base::SpaceInformationPtr &si) : ompl::base::Planner(si, "RTP") {
+	
+	// allow approximate solutions
+	specs_.approximateSolutions = true;
 
-ompl::control::RTP::RTP(const SpaceInformationPtr &si) : base::Planner(si, "RTP")
-{
-    specs_.approximateSolutions = true;
-    siC_ = si.get();
+	// i assume this means allow direct solutions?
+	specs_.directed = true;
 
-    Planner::declareParam<double>("goal_bias", this, &RTP::setGoalBias, &RTP::getGoalBias, "0.:.05:1.");
+	// declare the range and goal bias parameters based on pre-determined settings
+	Planner::declareParam<double>("range", this, &RTP::setRange, &RTP::getRange, "0.:1.:10000.");
+	Planner::declareParam<double>("goal_bias", this, &RTP::setGoalBias, &RTP::getGoalBias, "0.:.05:1.");
+
 }
 
-ompl::control::RTP::~RTP()
-{
-    freeMemory();
+/* Deconstruction and memory freeing */
+ompl::geometric::RTP::~RTP() {
+	freeMemory();
 }
 
-void ompl::control::RTP::setup()
-{
-    base::Planner::setup();
-    if (!nn_)
-        nn_.reset(tools::SelfConfig::getDefaultNearestNeighbors<Node *>(this));
-    nn_->setDistanceFunction([this](const Node *a, const Node *b) { return distanceFunction(a, b); });
+/* Clear function to remove all nodes from memory after the planner is done */
+void ompl::geometric::RTP::clear() {
+	Planner::clear();
+	sampler_.reset();
+	freeMemory();
+	NodeVec.clear(); 
+	lastGoalMotion_ = nullptr;
 }
 
-void ompl::control::RTP::clear()
+/* Clear the vector that holds the motions of our tree */
+void ompl::geometric::RTP::freeMemory()
 {
-    Planner::clear();
-    sampler_.reset();
-    controlSampler_.reset();
-    freeMemory();
-    if (nn_)
-        nn_->clear();
-    lastGoalNode_ = nullptr;
+	NodeVec.clear();
 }
 
-void ompl::control::RTP::freeMemory()
+/* Main solve function*/
+ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerTerminationCondition &ptc)
 {
-    if (nn_)
-    {
-        std::vector<Node *> Nodes;
-        nn_->list(Nodes);
-        for (auto &Node : Nodes)
-        {
-            if (Node->state)
-                si_->freeState(Node->state);
-            if (Node->control)
-                siC_->freeControl(Node->control);
-            delete Node;
-        }
-    }
+	// Check the validity of the initial state
+	checkValidity();
+
+	// Extract goal node from desired end position based on problem definition
+	ompl::base::Goal *goal = pdef_->getGoal().get(); 
+
+	// Cast the goal node to the GoalSampleableRegion
+	auto *goal_s = dynamic_cast<ompl::base::GoalSampleableRegion *>(goal); 
+
+	// Build initial form of the tree.
+	while (const ompl::base::State *st = pis_.nextStart()) 
+	{
+		// create a node (Motion) pointer, initialize first node with start state
+		auto *motion = new Motion(si_); 
+
+		// Copy the state into the SpaceInformation variable
+		si_->copyState(motion->state, st); 
+
+		// Add node to tree. push_back is used over append for consistency with other functions.
+		NodeVec.push_back(motion); 
+	}
+
+	// If there are no nodes in the NodeVec vector, then there are no valid start states. Throw error if so.
+	if (NodeVec.size() == 0) 
+	{
+		OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
+		return ompl::base::PlannerStatus::INVALID_START;
+	}
+
+	// no clue what this does, but it looks like it has to do with allocating memory from the sampler to the SpaceInformation.
+	if (!sampler_)
+		sampler_ = si_->allocStateSampler();
+
+	// Print out the number of states in the tree when planning begins.
+	OMPL_INFORM("%s: Starting planning with %u states already in datastructure", getName().c_str(), NodeVec.size());
+
+	// Initialize both solution pointers
+	Motion *solution = nullptr; 
+	Motion *approxsol = nullptr;
+
+	// no clue what this does either. looks like it has to do with finding the difference between the exact solution and approximate solution?
+	double approxdif = std::numeric_limits<double>::infinity();
+
+	// create new node in the space
+	auto *rmotion = new Motion(si_);
+	ompl::base::State *rstate = rmotion->state; // rstate : holds our sampled random state
+
+	while (!ptc)
+	{
+		/* sample random state (with goal biasing) */
+
+		if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample())
+			goal_s->sampleGoal(rstate); // sample the goal region where possible
+		else
+			sampler_->sampleUniform(rstate); // if not, then sample a state uniformly
+
+		/* Choose a random state from the tree */
+		int randI = std::rand() % NodeVec.size();
+		Motion *nmotion = NodeVec[randI];
+
+
+		/* check if path between two states is valid (takes pointers to State objects)*/
+		if (si_->checkMotion(nmotion->state, rstate)) 
+		{
+				auto *motion = new Motion(si_);        // allocate memory for a state
+				si_->copyState(motion->state, rstate); // copy the selected random state into the new node state
+				motion->parent = nmotion;              // set the randomly sampled node's parent as the node of interest
+				NodeVec.push_back(motion);             // append the new node to the tree
+
+				nmotion = motion;
+
+			/*Check if the goal is reached (ie distance from goal = 0)*/
+			double dist = 0.0;
+			bool sat = goal->isSatisfied(nmotion->state, &dist);
+
+			/*if statement if exact solution is reached*/
+			if (sat) 
+			{
+				approxdif = dist;
+				solution = nmotion;
+				break;
+			}
+
+			/*if exact solution not reached, check for approximate solution*/
+			if (dist < approxdif) 
+			{
+				approxdif = dist;
+				approxsol = nmotion;
+			}
+		}
+	}
+
+	/* set solution booleans to decide which solution is displayed later.*/
+	bool solved = false;
+	bool approximate = false;
+
+	/* approximate solution */
+	if (solution == nullptr)
+	{
+		solution = approxsol;
+		approximate = true;
+	}
+
+	if (solution != nullptr) // exact solution
+	{
+		lastGoalMotion_ = solution;
+
+		/* construct the solution path */
+		std::vector<Motion *> mpath; // mpath stores our Motion pointers for the path
+		while (solution != nullptr)
+		{
+			mpath.push_back(solution);
+			solution = solution->parent; // Keep moving up the tree of motions until nullptr (root)
+		}
+
+		/* set the solution path */
+		auto path(std::make_shared<PathGeometric>(si_));
+		for (int i = mpath.size() - 1; i >= 0; --i)
+			path->append(mpath[i]->state);
+		pdef_->addSolutionPath(path, approximate, approxdif, getName());
+		solved = true;
+	}
+
+	/* not sure what this does. my guess is that it has to do with freeing memory if a new node was found after the goal was reached.*/
+	if (rmotion->state != nullptr)
+		si_->freeState(rmotion->state);
+	delete rmotion;
+
+
+	/* Display result information*/
+	OMPL_INFORM("%s: Created %u states", getName().c_str(), NodeVec.size());
+
+	/* return the determined solution. */
+	return {solved, approximate};
 }
 
-ompl::base::PlannerStatus ompl::control::RTP::solve(const base::PlannerTerminationCondition &ptc)
+/*Planner setup. I assume most of this happens under the hood from the other .h files and within OMPL?*/
+void ompl::geometric::RTP::setup()
 {
-    // check if desired end position exists
-    checkValidity();
-    base::Goal *goal = pdef_->getGoal().get();
-    auto *goal_s = dynamic_cast<base::GoalSampleableRegion *>(goal);
-
-    // initialize nodes
-    while (const base::State *st = pis_.nextStart())
-    {
-        auto *node = new Node(siC_);
-        si_->copyState(node->state, st);
-        siC_->nullControl(node->control);
-        nn_->add(node);
-    }
-
-    // if no valid initial state is found, return the error status.
-    if (nn_->size() == 0)
-    {
-        OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
-        return base::PlannerStatus::INVALID_START;
-    }
-
-    // no clue what this does lol
-    if (!sampler_)
-        sampler_ = si_->allocStateSampler();
-    if (!controlSampler_)
-        controlSampler_ = siC_->allocDirectedControlSampler();
-
-    OMPL_INFORM("%s: Starting planning with %u states already in datastructure", getName().c_str(), nn_->size());
-
-    // generate solution and approximate solution nodes
-    Node *solution = nullptr;
-    Node *approxsol = nullptr;
-    double approxdif = std::numeric_limits<double>::infinity();
-
-    auto *rnode = new Node(siC_);
-    base::State *rstate = rnode->state;
-    Control *rctrl = rnode->control;
-    base::State *xstate = si_->allocState();
-
-    while (ptc == false)
-    {
-        /* sample random state (with goal biasing) */
-        if (goal_s && rng_.uniform01() < goalBias_ && goal_s->canSample())
-            goal_s->sampleGoal(rstate);
-        else
-            sampler_->sampleUniform(rstate);
-
-        /* find closest state in the tree */
-        Motion *nmotion = nn_->nearest(rmotion);
-
-        /* sample a random control that attempts to go towards the random state, and also sample a control duration */
-        unsigned int cd = controlSampler_->sampleTo(rctrl, nmotion->control, nmotion->state, rmotion->state);
-
-        
-        
-        
-        if (cd >= siC_->getMinControlDuration())
-        {
-            /* create a motion */
-            auto *motion = new Motion(siC_);
-            si_->copyState(motion->state, rmotion->state);
-            siC_->copyControl(motion->control, rctrl);
-            motion->steps = cd;
-            motion->parent = nmotion;
-
-            nn_->add(motion);
-            double dist = 0.0;
-            bool solv = goal->isSatisfied(motion->state, &dist);
-            if (solv)
-            {
-                approxdif = dist;
-                solution = motion;
-                break;
-            }
-            if (dist < approxdif)
-            {
-                approxdif = dist;
-                approxsol = motion;
-            }
-        }
-    }
-
-    bool solved = false;
-    bool approximate = false;
-    if (solution == nullptr)
-    {
-        solution = approxsol;
-        approximate = true;
-    }
-
-    if (solution != nullptr)
-    {
-        lastGoalMotion_ = solution;
-
-        /* construct the solution path */
-        std::vector<Motion *> mpath;
-        while (solution != nullptr)
-        {
-            mpath.push_back(solution);
-            solution = solution->parent;
-        }
-
-        /* set the solution path */
-        auto path(std::make_shared<PathControl>(si_));
-        for (int i = mpath.size() - 1; i >= 0; --i)
-            if (mpath[i]->parent)
-                path->append(mpath[i]->state, mpath[i]->control, mpath[i]->steps * siC_->getPropagationStepSize());
-            else
-                path->append(mpath[i]->state);
-        solved = true;
-        pdef_->addSolutionPath(path, approximate, approxdif, getName());
-    }
-
-    if (rnode->state)
-        si_->freeState(rnode->state);
-    if (rnode->control)
-        siC_->freeControl(rnode->control);
-    delete rnode;
-    si_->freeState(xstate);
-
-    OMPL_INFORM("%s: Created %u states", getName().c_str(), nn_->size());
-
-    return {solved, approximate};
+	Planner::setup();
+	tools::SelfConfig sc(si_, getName());
+	sc.configurePlannerRange(maxDistance_);
 }
 
-void ompl::control::RRT::getPlannerData(base::PlannerData &data) const
+
+void ompl::geometric::RTP::getPlannerData(ompl::base::PlannerData &data) const
 {
-    Planner::getPlannerData(data);
+	Planner::getPlannerData(data);
 
-    std::vector<Motion *> motions;
-    if (nn_)
-        nn_->list(motions);
+	// if the last node, make a vertex to designate the goal node.
+	if (lastGoalMotion_ != nullptr)
+		data.addGoalVertex(ompl::base::PlannerDataVertex(lastGoalMotion_->state));
 
-    double delta = siC_->getPropagationStepSize();
-
-    if (lastGoalMotion_)
-        data.addGoalVertex(base::PlannerDataVertex(lastGoalMotion_->state));
-
-    for (auto m : motions)
-    {
-        if (m->parent)
-        {
-            if (data.hasControls())
-                data.addEdge(base::PlannerDataVertex(m->parent->state), base::PlannerDataVertex(m->state),
-                             control::PlannerDataEdgeControl(m->control, m->steps * delta));
-            else
-                data.addEdge(base::PlannerDataVertex(m->parent->state), base::PlannerDataVertex(m->state));
-        }
-        else
-            data.addStartVertex(base::PlannerDataVertex(m->state));
-    }
+	for (auto &motion : NodeVec)
+	{
+		// create the start node vertex if none has been made already
+		if (motion->parent == nullptr)
+			data.addStartVertex(ompl::base::PlannerDataVertex(motion->state));
+		else
+		// create line segments to connect tree portions
+			data.addEdge(ompl::base::PlannerDataVertex(motion->parent->state), ompl::base::PlannerDataVertex(motion->state));
+	}
 }
+
+
+
