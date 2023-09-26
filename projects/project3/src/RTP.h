@@ -4,7 +4,6 @@
 // Authors: Santi Parra-Vargas, Eli Case
 //////////////////////////////////////
 
-
 /*
 
 Change log:
