@@ -119,11 +119,9 @@ namespace ompl
 			/* Maximum node length. We assume it is extremely small, hence we use 0..*/
 			double maxDistance_{0.};
 
-            base::StateSamplerPtr sampler_;
-
             // what are these for again?
-            DirectedControlSamplerPtr controlSampler;
-            const SpaceInformation *siC_;
+            //DirectedControlSamplerPtr controlSampler;
+            //const SpaceInformation *siC_;
 
 			/* RNG generator*/
 			RNG rng_;
