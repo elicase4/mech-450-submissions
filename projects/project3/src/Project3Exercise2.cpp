@@ -26,7 +26,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     space->setBounds(bounds);
 
     // Create an instance of space information for the state space
-    auto si(std::make_shared<ompl::base::SpaceInformation>(space);
+    auto si(std::make_shared<ompl::base::SpaceInformation>(space));
 
     // Set the state validity checker
     si->setStateValidityChecker( [] (const State* state) -> bool
