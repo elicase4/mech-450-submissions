@@ -25,7 +25,7 @@ Created first code draft. Commented as many lines as possible. -- Santi
 #include <ompl/tools/benchmark/Benchmark.h>
 
 // Per the project file suggestion, we also include the SE3 Rigid Body Planning program.
-#include "ompl/apps/SE3RigidBodyPlanning.h"
+#include <omplapp/apps/SE3RigidBodyPlanning.h>
 
 void benchmarkApartment()
 {
@@ -53,22 +53,22 @@ void benchmarkApartment()
     // Initialize the start state (values taken from the robot.dae file)
     ompl::base::ScopedState<ompl::base::SE3StateSpace> start(setup.getSpaceInformation());
     start->setX(241.81);
-    start->sety(106.15);
-    start->setz(36.46);
-    start->rotation().setIdentity()
+    start->setY(106.15);
+    start->setZ(36.46);
+    start->rotation().setIdentity();
 
     // Initialize the end state.
     ompl::base::ScopedState<ompl::base::SE3StateSpace> goal(start);
     goal->setX(-31.19);
-    goal->sety(-99.85);
-    goal->setz(36.46);
-    goal->rotation().setIdentity()
+    goal->setY(-99.85);
+    goal->setZ(36.46);
+    goal->rotation().setIdentity();
 
     // Finalizing setup
     setup.setStartAndGoalStates(start, goal);
     
     // Set collision checking (taken from SE3RigidBodyPlanning.cpp)
-    setup.getSpaceInformation()->setStateValidityChecker(0.01); 
+    setup.getSpaceInformation()->setStateValidityCheckingResolution(0.01); 
     setup.setup();
 
     // Print the setup (optional)
@@ -78,11 +78,12 @@ void benchmarkApartment()
     ompl::tools::Benchmark::Request request(runtime_lim, memory_lim, run_count);
     ompl::tools::Benchmark bench(setup, "Apartment");
 
+
     // Add the planners to the benchmark as needed
-    bench.addPlanner(std::make_shared<geometric::RTP>(setup.getSpaceInformation())); // RTP
-    bench.addPlanner(std::make_shared<geometric::EST>(setup.getSpaceInformation())); // EST
-    bench.addPlanner(std::make_shared<geometric::RRT>(setup.getSpaceInformation())); // RRT
-    bench.addPlanner(std::make_shared<geometric::PRM>(setup.getSpaceInformation())); // PRM
+    bench.addPlanner(std::make_shared<ompl::geometric::RTP>(setup.getSpaceInformation())); // RTP
+    bench.addPlanner(std::make_shared<ompl::geometric::EST>(setup.getSpaceInformation())); // EST
+    bench.addPlanner(std::make_shared<ompl::geometric::RRT>(setup.getSpaceInformation())); // RRT
+    bench.addPlanner(std::make_shared<ompl::geometric::PRM>(setup.getSpaceInformation())); // PRM
 
     // Run the benchmark
     bench.benchmark(request);
@@ -118,22 +119,22 @@ void benchmarkHome()
     // Initialize the start state (values taken from the robot.dae file)
     ompl::base::ScopedState<ompl::base::SE3StateSpace> start(setup.getSpaceInformation());
     start->setX(241.81);
-    start->sety(-214.95);
-    start->setz(46.19);
-    start->rotation().setIdentity()
+    start->setY(-214.95);
+    start->setZ(46.19);
+    start->rotation().setIdentity();
 
     // Initialize the end state.
     ompl::base::ScopedState<ompl::base::SE3StateSpace> goal(start);
     goal->setX(262.95);
-    goal->sety(75.05);
-    goal->setz(46.19);
-    goal->rotation().setIdentity()
+    goal->setY(75.05);
+    goal->setZ(46.19);
+    goal->rotation().setIdentity();
 
     // Finalizing setup
     setup.setStartAndGoalStates(start, goal);
     
     // Set collision checking (taken from SE3RigidBodyPlanning.cpp)
-    setup.getSpaceInformation()->setStateValidityChecker(0.01); 
+    setup.getSpaceInformation()->setStateValidityCheckingResolution(0.01); 
     setup.setup();
 
     // Print the setup (optional)
@@ -144,10 +145,10 @@ void benchmarkHome()
     ompl::tools::Benchmark bench(setup, "Home");
 
     // Add the planners to the benchmark as needed
-    bench.addPlanner(std::make_shared<geometric::RTP>(setup.getSpaceInformation())); // RTP
-    bench.addPlanner(std::make_shared<geometric::EST>(setup.getSpaceInformation())); // EST
-    bench.addPlanner(std::make_shared<geometric::RRT>(setup.getSpaceInformation())); // RRT
-    bench.addPlanner(std::make_shared<geometric::PRM>(setup.getSpaceInformation())); // PRM
+    bench.addPlanner(std::make_shared<ompl::geometric::RTP>(setup.getSpaceInformation())); // RTP
+    bench.addPlanner(std::make_shared<ompl::geometric::EST>(setup.getSpaceInformation())); // EST
+    bench.addPlanner(std::make_shared<ompl::geometric::RRT>(setup.getSpaceInformation())); // RRT
+    bench.addPlanner(std::make_shared<ompl::geometric::PRM>(setup.getSpaceInformation())); // PRM
 
     // Run the benchmark
     bench.benchmark(request);
