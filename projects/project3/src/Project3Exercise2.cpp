@@ -109,8 +109,8 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Create a space information using the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
-    ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
-    // auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); //suggest using a shared smart pointer, othwerwise it must manually be freed
+    // ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
+    auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); //suggest using a shared smart pointer, othwerwise it must manually be freed
 
     // Set the state validity checker for point robot
     // si->setStateValidityChecker(std::bind(&isValidStatePoint, std::placeholders::_1, obstacles));
