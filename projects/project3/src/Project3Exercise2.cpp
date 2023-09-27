@@ -99,18 +99,15 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Define the bounds for the space. To start, we'll use a 2x1 box.
     ompl::base::RealVectorBounds bounds(2);
-    bounds.setLow(0, -1.0);  // Lower bound for x
-    bounds.setHigh(0, 1.0);  // Upper bound for x
-    bounds.setLow(1, -1.0);  // Lower bound for y
-    bounds.setHigh(1, 1.0);  // Upper bound for y
+    bounds.setLow(0);
+    bounds.setHigh(2);
 
     // Set the bounds
     space->setBounds(bounds);
 
     // Create a space information using the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
-    // ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
-    auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); //suggest using a shared smart pointer, othwerwise it must manually be freed
+    
 
     // Set the state validity checker for point robot
     // si->setStateValidityChecker(std::bind(&isValidStatePoint, std::placeholders::_1, obstacles));
@@ -119,12 +116,36 @@ void planBox(const std::vector<Rectangle> &obstacles)
         return isValidStateSquare(state, 0.05, obstacles);
     }); 
 
+    // Create start state
+    ompl::base::ScopedState<> start(space);
+    start->as<ompl::base::SE2StateSpace::StateType>()->setX(0.1);
+    start->as<ompl::base::SE2StateSpace::StateType>()->setY(0.1);
+    
+    // Create goal state
+    ompl::base::ScopedState<> goal(space); 
+    goal->as<ompl::base::SE2StateSpace::StateType>()->setX(0.8);
+    goal->as<ompl::base::SE2StateSpace::StateType>()->setY(0.8);
+
+    // Problem instance
+    auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); 
+
+    // Set the start and goal states
+    pdef->setStartAndGoalStates(start, goal);
+
+
     // Create the RTP planner for the space and set the problem definition
     auto planner(std::make_shared<ompl::geometric::RTP>(si));
     planner->setProblemDefinition(pdef);
 
+    // Setup the planner.
+    planner->setup();
+
+    // Print problem settings
+    pdef->print(std::cout);
+
+
     // Attempt to solve the problem
-    ompl::base::PlannerStatus solved = planner->ompl::base::Planner::solve(10.0);
+    ompl::base::PlannerStatus solved = planner->ompl::base::Planner::solve(30.0);
 
     // If the planner found a solution, print it to screen
     if (solved)
@@ -133,6 +154,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
         // Extract and print the solution path, if needed
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         // Print or process the solution path as needed
+        solutionPath->print(std::cout);
     }
     else
     {
