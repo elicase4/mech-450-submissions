@@ -36,8 +36,9 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
 
     // Set the state validity checker
-    si->setStateValidityChecker((const State* state) -> bool
-        return isStateValidPoint(state, obstacles));  
+    si->setStateValidityChecker([obstacles] (const ompl::base::State* state){
+        return isValidStatePoint(state, obstacles);
+    }); 
     
     // Create start state
     ompl::base::ScopedState<> start(space);
@@ -77,7 +78,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     {
         // get the goal information from pdef and inquire about the solution path
         ompl::base::PathPtr path = pdef->getSolutionPath();
-        std::cout << "Solution path was found:" << std::endl;
+        std::cout << "Point Robot solution path was found." << std::endl;
 
         // placeholder print path to screen (later, can put an output stream to a textfile
         // for visualization, once we know the RTP implementation is correct)
@@ -85,7 +86,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     }
     else
     {
-        std::cout << "No solution was found." << std::endl;
+        std::cout << "No point robot solution was found." << std::endl;
     }
 }
 
@@ -109,9 +110,14 @@ void planBox(const std::vector<Rectangle> &obstacles)
     // Create a space information using the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
     ompl::base::ProblemDefinitionPtr pdef(new ompl::base::ProblemDefinition(si));
+    // auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); //suggest using a shared smart pointer, othwerwise it must manually be freed
 
     // Set the state validity checker for point robot
-    si->setStateValidityChecker(std::bind(&isValidStatePoint, std::placeholders::_1, obstacles));
+    // si->setStateValidityChecker(std::bind(&isValidStatePoint, std::placeholders::_1, obstacles));
+    si->setStateValidityChecker([obstacles] (const ompl::base::State* state){
+        // using sideLen = 0.05
+        return isValidStateSquare(state, 0.05, obstacles);
+    }); 
 
     // Create the RTP planner for the space and set the problem definition
     auto planner(std::make_shared<ompl::geometric::RTP>(si));
@@ -139,21 +145,34 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     // Initialize obstacles vector as empty
     obstacles.clear();
     
-    // Define the obstacles
-    Rectangle obstacle1 = {-0.5, -1.0, 0.2, 1.4};
-    Rectangle obstacle2 = {-0.4, 0.6, 0.2, 0.4};
-    Rectangle obstacle3 = {0.0, -1.0, 0.2, 0.7};
-    Rectangle obstacle4 = {0.0, -0.1, 0.2, 1.1};
-    Rectangle obstacle5 = {0.4, 0.3, 0.6, 0.2};
-    Rectangle obstacle6 = {0.5, 0.6, 0.2, 0.4};
+    // Initialize setter for obstacles
+    std::vector<double> obstacleAdd;
+    
+    // Rectangle setter function
+    auto addRectangle = [&] (const std::vector<double>& settings) {
+        Rectangle rectangleTmp;
+        rectangleTmp.x = settings[0];
+        rectangleTmp.y = settings[1];
+        rectangleTmp.width = settings[2];
+        rectangleTmp.height = settings[3];
+        obstacles.push_back(rectangleTmp);
+    };
 
-    // Add the new obstacles to the obstacle vector 
-    obstacles.push_back(obstacle1); 
-    obstacles.push_back(obstacle2); 
-    obstacles.push_back(obstacle3); 
-    obstacles.push_back(obstacle4); 
-    obstacles.push_back(obstacle5); 
-    obstacles.push_back(obstacle6); 
+    // Define the obstacles
+    obstacleAdd = {-0.5, -1.0, 0.2, 1.4};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {-0.4, 0.6, 0.2, 0.4};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {0.0, -1.0, 0.2, 0.7};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {0.0, -0.1, 0.2, 1.1};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {0.4, 0.3, 0.6, 0.2};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {0.5, 0.6, 0.2, 0.4};
+    addRectangle(obstacleAdd);
+
+    std::cout << "Environment 1 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
 
 // Make the second environment to test our planner. Written by Santi.
@@ -193,10 +212,11 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
     obstacles.push_back(obstacle2);
     obstacles.push_back(obstacle3);
 
-    std::cout<<"Environment 2 created. Using "<<obstacles.size()<<" total obstacles."<<std::endl;
-    
+    std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
 
+// I think we can implement with lambda funcitons that use the provided implementations in collisionchecking.h
+/*
 // We also need functions to find state validity in order to continue planning.
 bool isValidStatePoint(const ompl::base::State *state, const std::vector<Rectangle> &obstacles)
 {
@@ -229,6 +249,7 @@ bool isValidStateSquare(const ompl::base::State *state, double sidelength, const
     // Check if the state is valid and return the result
     return isValidStateSquare(x, y, theta, sidelength, obstacles);
 }
+*/
 
 int main(int /* argc */, char ** /* argv */)
 {
