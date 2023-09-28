@@ -35,7 +35,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
 
     // Record the environment bounds to an output file
     std::ofstream file("bounds1.txt");
-    file << bounds.low << "," << bounds.high << std::endl;
+    file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create an instance of space information for the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
@@ -111,7 +111,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
     
     // Record the environment bounds to an output file
     std::ofstream file("bounds2.txt");
-    file << bounds.low << "," << bounds.high << std::endl;
+    file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create a space information using the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
