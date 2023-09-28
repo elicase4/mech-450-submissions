@@ -152,7 +152,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Box robot planning succeeded!" << std::endl;
         
-        std::ofstream file("pointrobot.txt");
+        std::ofstream file("boxrobot.txt");
         solutionPath->print(file);
     }
     else
