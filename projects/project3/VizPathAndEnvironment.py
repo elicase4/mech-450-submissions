@@ -50,7 +50,7 @@ def parse_log_files(path_file, env_file, bounds_file, point_robot, box_robot, bo
 
     return path_arr, env_arr, env_bounds
     
-def gen_env_vis(env_arr, env_bounds):
+def gen_env_vis(env_arr, env_bounds, file_num):
     # Visualize the environment
     fig, ax = plt.subplots()
 
@@ -58,11 +58,13 @@ def gen_env_vis(env_arr, env_bounds):
         ax.add_patch(Rectangle((env_arr[i,0], env_arr[i,1]), env_arr[i,2], env_arr[i,3], edgecolor='steelblue', facecolor='grey', fill=True, lw=2))
     ax.set_xlim(env_bounds[0], env_bounds[1]) 
     ax.set_ylim(env_bounds[2], env_bounds[3]) 
+    
+    plt.savefig('figures/env' + file_num + '.png')
     plt.show()
 
     return None
 
-def gen_path_vis(path_arr, env_arr, env_bounds):
+def gen_path_vis(path_arr, env_arr, env_bounds, file_num):
     # Visualize the environment
     fig, ax = plt.subplots()
 
@@ -72,9 +74,9 @@ def gen_path_vis(path_arr, env_arr, env_bounds):
     ax.set_ylim(env_bounds[2], env_bounds[3])
 
     # Add the computed path
-    print(path_arr)
     plt.plot(path_arr[:,0], path_arr[:,1], '-', color='yellow')
 
+    plt.savefig('figures/pathenv' + file_num + '.png')
     plt.show()
 
     return None
@@ -86,6 +88,7 @@ def main(argv):
     parser.add_argument('--point-robot', default=False, action='store_true', help='Option for point robot')
     parser.add_argument('--box-robot', default=False, action='store_true', help='Option for box robot')
     parser.add_argument('--box-robot-side', default=None, help='Specify the side length of a box robot. Must include this if visualizing a box robot')
+    parser.add_argument('-n', '--file-num', default=None, help='Specify the file numering for output naming conventions.', required=True)
 
     (options, args) = parser.parse_known_args()
 
@@ -93,10 +96,10 @@ def main(argv):
     path_arr, env_arr, env_bounds = parse_log_files(args[0], args[1], args[2], options.point_robot, options.box_robot, options.box_robot_side)
 
     # Generate the visualzation of environment only
-    gen_env_vis(env_arr, env_bounds)
+    gen_env_vis(env_arr, env_bounds, options.file_num)
 
     # Generate the visualzation of path and environment
-    gen_path_vis(path_arr, env_arr, env_bounds)
+    gen_path_vis(path_arr, env_arr, env_bounds, options.file_num)
     
     return 0
 
