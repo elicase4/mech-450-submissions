@@ -143,7 +143,6 @@ void planBox(const std::vector<Rectangle> &obstacles)
     // Print problem settings
     pdef->print(std::cout);
 
-
     // Attempt to solve the problem
     ompl::base::PlannerStatus solved = planner->ompl::base::Planner::solve(30.0);
 
@@ -236,42 +235,6 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
 
     std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
-
-// I think we can implement with lambda funcitons that use the provided implementations in collisionchecking.h
-/*
-// We also need functions to find state validity in order to continue planning.
-bool isValidStatePoint(const ompl::base::State *state, const std::vector<Rectangle> &obstacles)
-{
-    // Cast the state to a real vector state space
-    auto rvlstate = state->as<ompl::base::RealVectorStateSpace::StateType>();
-
-    // Get the coordinates of the state as x and y
-    double x = rvlstate->values[0];
-    double y = rvlstate->values[1];
-
-    // Check if the state is valid and  return the result
-    return isValidStatePoint(x, y, obstacles);
-}
-
-// This is the same boolean function as the previous one, except for the square robot.
-bool isValidStateSquare(const ompl::base::State *state, double sidelength, const std::vector<Rectangle> &obstacles)
-{
-    // Cast the state to a real vector state space
-    auto rvlstate = state->as<ompl::base::SE2StateSpace::StateType>(0);
-
-    // Get the coordinates of the state as x and y
-    double x = rvlstate->values[0];
-    double y = rvlstate->values[1];
-
-    // Get the orientation of the square as theta by using the SE2 space
-    auto rotstate = state->as<ompl::base::SE2StateSpace::StateType>(1)
-
-    double theta = rotstate->value;
-
-    // Check if the state is valid and return the result
-    return isValidStateSquare(x, y, theta, sidelength, obstacles);
-}
-*/
 
 int main(int /* argc */, char ** /* argv */)
 {

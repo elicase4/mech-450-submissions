@@ -143,7 +143,6 @@ ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerT
 		int randI = std::rand() % NodeVec.size();
 		Motion *nmotion = NodeVec[randI];
 
-
 		/* check if path between two states is valid (takes pointers to State objects)*/
 		if (si_->checkMotion(nmotion->state, rstate)) 
 		{
@@ -246,6 +245,3 @@ void ompl::geometric::RTP::getPlannerData(ompl::base::PlannerData &data) const
 			data.addEdge(ompl::base::PlannerDataVertex(motion->parent->state), ompl::base::PlannerDataVertex(motion->state));
 	}
 }
-
-
-

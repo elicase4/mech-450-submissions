@@ -74,8 +74,6 @@ namespace ompl
 			
 			void setup() override;
 
-
-
 		protected:
 			/** \brief Representation of a motion
 
@@ -136,5 +134,3 @@ namespace ompl
 }  // namespace ompl
 
 #endif
-
-
