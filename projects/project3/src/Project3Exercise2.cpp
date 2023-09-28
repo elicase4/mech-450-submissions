@@ -34,7 +34,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     space->setBounds(bounds);
 
     // Record the environment bounds to an output file
-    std::ofstream file("bounds1.txt");
+    std::ofstream file("pointrobotbounds.txt");
     file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create an instance of space information for the state space
@@ -103,14 +103,14 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Define the bounds for the space. To start, we'll use a 2x1 box.
     ompl::base::RealVectorBounds bounds(2);
-    bounds.setLow(-2);
-    bounds.setHigh(2);
+    bounds.setLow(-1.0);
+    bounds.setHigh(1.0);
 
     // Set the bounds
     space->setBounds(bounds);
     
     // Record the environment bounds to an output file
-    std::ofstream file("bounds2.txt");
+    std::ofstream file("boxrobotbounds.txt");
     file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create a space information using the state space
@@ -125,13 +125,13 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Create start state
     ompl::base::ScopedState<> start(space);
-    start->as<ompl::base::SE2StateSpace::StateType>()->setX(0.1);
-    start->as<ompl::base::SE2StateSpace::StateType>()->setY(0.1);
+    start->as<ompl::base::SE2StateSpace::StateType>()->setX(-0.3);
+    start->as<ompl::base::SE2StateSpace::StateType>()->setY(0.0);
     
     // Create goal state
     ompl::base::ScopedState<> goal(space); 
-    goal->as<ompl::base::SE2StateSpace::StateType>()->setX(0.8);
-    goal->as<ompl::base::SE2StateSpace::StateType>()->setY(0.8);
+    goal->as<ompl::base::SE2StateSpace::StateType>()->setX(-0.7);
+    goal->as<ompl::base::SE2StateSpace::StateType>()->setY(0.7);
 
     // Problem instance
     auto pdef(std::make_shared<ompl::base::ProblemDefinition>(si)); 
@@ -230,11 +230,15 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
     };
     
     // Define the obstacles
-    obstacleAdd = {1.0, 1.0, 0.2, 0.4};
+    obstacleAdd = {-0.7, -0.3, 0.2, 0.6};
     addRectangle(obstacleAdd);
-    obstacleAdd = {2.0, 2.5, 0.3, 0.2};
+    obstacleAdd = {-0.5, -0.3, 1.0, 0.2};
     addRectangle(obstacleAdd);
-    obstacleAdd = {4.0, 3.5, 0.4, 0.2};
+    obstacleAdd = {-0.5, 0.1, 0.7, 0.2};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {0.35, -0.1, 0.15, 0.6};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {-0.5, 0.5, 1.0, 0.2};
     addRectangle(obstacleAdd);
 
     // Output obstacle coordinates
