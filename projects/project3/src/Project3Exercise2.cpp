@@ -180,6 +180,7 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
         obstacles.push_back(rectangleTmp);
     };
 
+
     // Define the obstacles
     obstacleAdd = {-0.5, -1.0, 0.2, 1.4};
     addRectangle(obstacleAdd);
@@ -193,6 +194,14 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     addRectangle(obstacleAdd);
     obstacleAdd = {0.5, 0.6, 0.2, 0.4};
     addRectangle(obstacleAdd);
+        
+    // Output obstacle coordinates
+    std::freopen("env1.txt", "w", stdout);
+    for (Rectangle obst : obstacles)
+    {
+        std::cout << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+    }
+    std::fclose(stdout);
 
     std::cout << "Environment 1 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
@@ -234,6 +243,14 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
     obstacles.push_back(obstacle2);
     obstacles.push_back(obstacle3);
 
+    // Output obstacle coordinates
+    std::freopen("env2.txt", "w", stdout);
+    for (Rectangle obst : obstacles)
+    {
+        std::cout << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+    }
+    std::fclose(stdout);
+    
     std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
 
