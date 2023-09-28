@@ -33,6 +33,10 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     bounds.setHigh(1.0);
     space->setBounds(bounds);
 
+    // Record the environment bounds to an output file
+    std::ofstream file("bounds1.txt");
+    file << bounds.low() << "," << bounds.high() << std::endl;
+
     // Create an instance of space information for the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
 
@@ -104,13 +108,16 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Set the bounds
     space->setBounds(bounds);
+    
+    // Record the environment bounds to an output file
+    std::ofstream file("bounds2.txt");
+    file << bounds.low() << "," << bounds.high() << std::endl;
 
     // Create a space information using the state space
     auto si(std::make_shared<ompl::base::SpaceInformation>(space));
     
 
-    // Set the state validity checker for point robot
-    // si->setStateValidityChecker(std::bind(&isValidStatePoint, std::placeholders::_1, obstacles));
+    // Set the state validity checker for square robot
     si->setStateValidityChecker([obstacles] (const ompl::base::State* state){
         // using sideLen = 0.05
         return isValidStateSquare(state, 0.05, obstacles);
@@ -150,14 +157,14 @@ void planBox(const std::vector<Rectangle> &obstacles)
     if (solved)
     {
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
-        std::cout << "Box robot planning succeeded!" << std::endl;
+        std::cout << "Square Robot solution path was found." << std::endl;
         
         std::ofstream file("boxrobot.txt");
         solutionPath->print(file);
     }
     else
     {
-        std::cout << "Box robot planning failed." << std::endl;
+        std::cout << "No square robot solution was found." << std::endl;
     }
 }
 
@@ -179,7 +186,6 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
         obstacles.push_back(rectangleTmp);
     };
 
-
     // Define the obstacles
     obstacleAdd = {-0.5, -1.0, 0.2, 1.4};
     addRectangle(obstacleAdd);
@@ -195,7 +201,6 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     addRectangle(obstacleAdd);
         
     // Output obstacle coordinates
-    // std::freopen("env1.txt", "w", stdout);
     std::ofstream file("env1.txt");
     for (Rectangle obst : obstacles)
     {
@@ -208,39 +213,29 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
 // Make the second environment to test our planner. Written by Santi.
 void makeEnvironment2(std::vector<Rectangle> &obstacles)
 {
-    // Define the obstacles as desired. For simplicity, any given obstacle is defined as follows
-    // Rectangle obstacle{num};
-    // obstacle{num}.x = {num};
-    // obstacle{num}.y = {num};
-    // obstacle{num}.width = {num};
-    // obstacle{num}.height = {num};
-    // This, of course, implies that only rectangles are used. Repeat as many times as desired
-
-    // Note to instructors: this can probably (definitely) be simplified with a for loop. 
-    // I'm not built for that just yet. Sorry.
-
-    Rectangle obstacle1;                        // define first obstacle
-    obstacle1.x = 1.0;                          // xcoordinate of origin
-    obstacle1.y = 1.0;                          // ycoordinate of origin
-    obstacle1.width = 0.2;                      // obstacle width
-    obstacle1.height = 0.4;                     // obstacle height
-
-    Rectangle obstacle2;                        
-    obstacle2.x = 2.0;                          
-    obstacle2.y = 2.5;                          
-    obstacle2.width = 0.3;                      
-    obstacle2.height = 0.2; 
-    
-    Rectangle obstacle3;                        
-    obstacle3.x = 4.0;                          
-    obstacle3.y = 3.5;                          
-    obstacle3.width = 0.4;                      
-    obstacle3.height = 0.2; 
-    
+    // Initialize obstacles vector as empty
     obstacles.clear();
-    obstacles.push_back(obstacle1);
-    obstacles.push_back(obstacle2);
-    obstacles.push_back(obstacle3);
+    
+    // Initialize setter for obstacles
+    std::vector<double> obstacleAdd;
+    
+    // Rectangle setter lambda
+    auto addRectangle = [&] (const std::vector<double>& settings) {
+        Rectangle rectangleTmp;
+        rectangleTmp.x = settings[0];
+        rectangleTmp.y = settings[1];
+        rectangleTmp.width = settings[2];
+        rectangleTmp.height = settings[3];
+        obstacles.push_back(rectangleTmp);
+    };
+    
+    // Define the obstacles
+    obstacleAdd = {1.0, 1.0, 0.2, 0.4};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {2.0, 2.5, 0.3, 0.2};
+    addRectangle(obstacleAdd);
+    obstacleAdd = {4.0, 3.5, 0.4, 0.2};
+    addRectangle(obstacleAdd);
 
     // Output obstacle coordinates
     std::ofstream file("env2.txt");
@@ -249,7 +244,7 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
         file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
     }
     
-    std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
+    std::cout << "Environment 2 created using " << obstacles.size() << " total obstacles." << std::endl;
 }
 
 int main(int /* argc */, char ** /* argv */)

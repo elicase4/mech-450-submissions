@@ -26,7 +26,7 @@ def parse_log_files(path_file, env_file, point_robot, box_robot, box_robot_side)
                 if "RealVectorState" in line:
                     cart_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
                     path_add1.append(cart_nums)
-                if "SO2State" in line:
+                elif "SO2State" in line:
                     rot_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
                     path_add2.append(rot_nums[-1])
         path_arr = numpy.append(path_add1, numpy.array(path_add2).reshape(-1,1), axis=1)
