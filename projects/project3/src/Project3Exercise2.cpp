@@ -77,12 +77,12 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     if (solved)
     {
         // get the goal information from pdef and inquire about the solution path
-        ompl::base::PathPtr path = pdef->getSolutionPath();
+        ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Point Robot solution path was found." << std::endl;
 
-        // placeholder print path to screen (later, can put an output stream to a textfile
-        // for visualization, once we know the RTP implementation is correct)
-        path->print(std::cout);
+        std::freopen("pointrobot.txt", "w", stdout);
+        solutionPath->print(std::cout);
+        std::fclose(stdout);
     }
     else
     {
@@ -149,11 +149,12 @@ void planBox(const std::vector<Rectangle> &obstacles)
     // If the planner found a solution, print it to screen
     if (solved)
     {
-        std::cout << "Box robot planning succeeded!" << std::endl;
-        // Extract and print the solution path, if needed
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
-        // Print or process the solution path as needed
+        std::cout << "Box robot planning succeeded!" << std::endl;
+        
+        std::freopen("boxrobot.txt", "w", stdout);
         solutionPath->print(std::cout);
+        std::fclose(stdout);
     }
     else
     {
@@ -169,7 +170,7 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     // Initialize setter for obstacles
     std::vector<double> obstacleAdd;
     
-    // Rectangle setter function
+    // Rectangle setter lambda
     auto addRectangle = [&] (const std::vector<double>& settings) {
         Rectangle rectangleTmp;
         rectangleTmp.x = settings[0];
