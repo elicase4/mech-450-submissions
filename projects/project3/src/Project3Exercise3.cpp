@@ -90,6 +90,7 @@ void benchmarkApartment()
     
     // Save benchmark results to file for use with Planner-Arena:
     bench.saveResultsToFile();
+
 }
 
 // Note: this code is the exact same as that for the Apartment environment, just tailored to Home.
@@ -155,6 +156,7 @@ void benchmarkHome()
     
     // Save benchmark results to file for use with Planner-Arena:
     bench.saveResultsToFile();
+
 }
 
 int main(int /* argc */, char ** /* argv */)

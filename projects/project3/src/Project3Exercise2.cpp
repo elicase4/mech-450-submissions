@@ -166,6 +166,9 @@ void planBox(const std::vector<Rectangle> &obstacles)
     {
         std::cout << "No square robot solution was found." << std::endl;
     }
+
+    // clear planner
+    planner->clear();
 }
 
 void makeEnvironment1(std::vector<Rectangle> &obstacles)

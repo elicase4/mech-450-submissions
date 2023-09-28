@@ -214,6 +214,9 @@ ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerT
 	/* Display result information*/
 	OMPL_INFORM("%s: Created %u states", getName().c_str(), NodeVec.size());
 
+	// clear NodeVec so subsequent runs don't take from previous runs
+	freeMemory();
+
 	/* return the determined solution. */
 	return {solved, approximate};
 }
