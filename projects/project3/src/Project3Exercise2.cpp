@@ -99,7 +99,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
 
     // Define the bounds for the space. To start, we'll use a 2x1 box.
     ompl::base::RealVectorBounds bounds(2);
-    bounds.setLow(0);
+    bounds.setLow(-2);
     bounds.setHigh(2);
 
     // Set the bounds

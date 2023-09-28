@@ -1,0 +1,54 @@
+// note: i changed the bounds in planBox from (-2,2) to (-1,1)
+
+
+
+void makeEnvironment2(std::vector<Rectangle> &obstacles)
+{
+    // Define the obstacles as desired. For simplicity, any given obstacle is defined as follows
+    // Rectangle obstacle{num};
+    // obstacle{num}.x = {num};
+    // obstacle{num}.y = {num};
+    // obstacle{num}.width = {num};
+    // obstacle{num}.height = {num};
+    // This, of course, implies that only rectangles are used. Repeat as many times as desired
+
+    // Note to instructors: this can probably (definitely) be simplified with a for loop. 
+    // I'm not built for that just yet. Sorry.
+
+    Rectangle obstacle1;                        // define first obstacle
+    obstacle1.x = 0.0;                          // xcoordinate of origin
+    obstacle1.y = 0.1;                          // ycoordinate of origin
+    obstacle1.width = 0.1;                      // obstacle width
+    obstacle1.height = 0.4;                     // obstacle height
+
+    Rectangle obstacle2;                        
+    obstacle2.x = 0.2;                          
+    obstacle2.y = 0.2;                          
+    obstacle2.width = 0.4;                      
+    obstacle2.height = 0.1; 
+    
+    Rectangle obstacle3;                        
+    obstacle3.x = 0.2;                          
+    obstacle3.y = 0.0;                          
+    obstacle3.width = 0.4;                      
+    obstacle3.height = 0.1; 
+    
+    Rectangle obstacle4;                        
+    obstacle4.x = 0.5;                          
+    obstacle4.y = 0.5;                          
+    obstacle4.width = 0.1;                      
+    obstacle4.height = 0.8; 
+    
+    Rectangle obstacle5;                        
+    obstacle5.x = 0.5;                          
+    obstacle5.y = 0.9;                          
+    obstacle5.width = 0.4;                      
+    obstacle5.height = 0.1; 
+    
+    obstacles.clear();
+    obstacles.push_back(obstacle1);
+    obstacles.push_back(obstacle2);
+    obstacles.push_back(obstacle3);
+
+    std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
+}
