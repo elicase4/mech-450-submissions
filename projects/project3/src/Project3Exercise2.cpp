@@ -14,6 +14,7 @@ Edited the general code a bit for syntax, but some errors persist. -- Santi, 9/2
 */
 
 #include <iostream>
+#include <fstream>
 
 // The collision checker routines
 #include "CollisionChecking.h"
@@ -80,9 +81,8 @@ void planPoint(const std::vector<Rectangle> &obstacles)
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Point Robot solution path was found." << std::endl;
 
-        std::freopen("pointrobot.txt", "w", stdout);
-        solutionPath->print(std::cout);
-        std::fclose(stdout);
+        std::ofstream file("pointrobot.txt");
+        solutionPath->print(file);
     }
     else
     {
@@ -152,9 +152,8 @@ void planBox(const std::vector<Rectangle> &obstacles)
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Box robot planning succeeded!" << std::endl;
         
-        std::freopen("boxrobot.txt", "w", stdout);
-        solutionPath->print(std::cout);
-        std::fclose(stdout);
+        std::ofstream file("pointrobot.txt");
+        solutionPath->print(file);
     }
     else
     {
@@ -196,12 +195,12 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     addRectangle(obstacleAdd);
         
     // Output obstacle coordinates
-    std::freopen("env1.txt", "w", stdout);
+    // std::freopen("env1.txt", "w", stdout);
+    std::ofstream file("env1.txt");
     for (Rectangle obst : obstacles)
     {
-        std::cout << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+        file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
     }
-    std::fclose(stdout);
 
     std::cout << "Environment 1 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
@@ -244,12 +243,11 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
     obstacles.push_back(obstacle3);
 
     // Output obstacle coordinates
-    std::freopen("env2.txt", "w", stdout);
+    std::ofstream file("env2.txt");
     for (Rectangle obst : obstacles)
     {
-        std::cout << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+        file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
     }
-    std::fclose(stdout);
     
     std::cout << "Environment 2 created using "<< obstacles.size() << " total obstacles."<< std::endl;
 }
