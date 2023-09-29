@@ -1,0 +1,46 @@
+Geometric path with 11 states
+Compound state [
+RealVectorState [-0.3 0]
+SO2State [0]
+]
+Compound state [
+RealVectorState [0.214443 0.0445849]
+SO2State [2.29182]
+]
+Compound state [
+RealVectorState [-0.0881171 -0.030463]
+SO2State [-1.53938]
+]
+Compound state [
+RealVectorState [0.288973 0.0347875]
+SO2State [-3.09375]
+]
+Compound state [
+RealVectorState [0.303166 0.457397]
+SO2State [-0.848012]
+]
+Compound state [
+RealVectorState [0.103687 0.44956]
+SO2State [-2.6273]
+]
+Compound state [
+RealVectorState [-0.379525 0.439386]
+SO2State [-0.76955]
+]
+Compound state [
+RealVectorState [0.156537 0.376341]
+SO2State [-0.491682]
+]
+Compound state [
+RealVectorState [-0.126501 0.383535]
+SO2State [1.08903]
+]
+Compound state [
+RealVectorState [-0.566332 0.343664]
+SO2State [1.59384]
+]
+Compound state [
+RealVectorState [-0.7 0.7]
+SO2State [0]
+]
+

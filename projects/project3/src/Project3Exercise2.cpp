@@ -85,7 +85,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Point Robot solution path was found." << std::endl;
 
-        std::ofstream file("pointrobot.txt");
+        std::ofstream file("txt_output/pointrobot.txt");
         solutionPath->print(file);
     }
     else
@@ -110,7 +110,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
     space->setBounds(bounds);
     
     // Record the environment bounds to an output file
-    std::ofstream file("boxrobotbounds.txt");
+    std::ofstream file("txt_output/boxrobotbounds.txt");
     file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create a space information using the state space
@@ -159,7 +159,7 @@ void planBox(const std::vector<Rectangle> &obstacles)
         ompl::base::PathPtr solutionPath = pdef->getSolutionPath();
         std::cout << "Square Robot solution path was found." << std::endl;
         
-        std::ofstream file("boxrobot.txt");
+        std::ofstream file("txt_output/boxrobot.txt");
         solutionPath->print(file);
     }
     else
@@ -204,7 +204,7 @@ void makeEnvironment1(std::vector<Rectangle> &obstacles)
     addRectangle(obstacleAdd);
         
     // Output obstacle coordinates
-    std::ofstream file("env1.txt");
+    std::ofstream file("txt_output/env1.txt");
     for (Rectangle obst : obstacles)
     {
         file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
@@ -245,7 +245,7 @@ void makeEnvironment2(std::vector<Rectangle> &obstacles)
     addRectangle(obstacleAdd);
 
     // Output obstacle coordinates
-    std::ofstream file("env2.txt");
+    std::ofstream file("txt_output/env2.txt");
     for (Rectangle obst : obstacles)
     {
         file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
