@@ -36,17 +36,14 @@ void benchmarkApartment()
     int run_count = 50;
 
     // Initialize runtime and memory limit variables. 
-    // Without these, the benchmark risks running forever.
-    double runtime_lim = 60.0;
+    double runtime_lim = 150.0;
     double memory_lim = 10000.0;
 
     /*
     Set up the mesh and environments. These require calling the .dae files for 
-    the environment. Note to Eli and/or instructors: not really sure if we have to
-    make these calls general so that it can run on any maching or if we're operating 
-    under the assumption that we're using Docker all the time.
-
+    the environment. 
     */
+
     std::string robot = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_robot.dae";
     std::string world = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_env.dae";
 
@@ -104,16 +101,14 @@ void benchmarkHome()
 
     // Initialize runtime and memory limit variables. 
     // Without these, the benchmark risks running forever.
-    double runtime_lim = 60.0;
-    double memory_lim = 10000.0;
+    double runtime_lim = 120.0;
+    double memory_lim = 100000.0;
 
     /*
     Set up the mesh and environments. These require calling the .dae files for 
-    the environment. Note to Eli and/or instructors: not really sure if we have to
-    make these calls general so that it can run on any maching or if we're operating 
-    under the assumption that we're using Docker all the time.
-
+    the environment. 
     */
+
     std::string robot = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_robot.dae";
     std::string world = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_env.dae";
 
