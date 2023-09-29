@@ -34,7 +34,7 @@ void planPoint(const std::vector<Rectangle> &obstacles)
     space->setBounds(bounds);
 
     // Record the environment bounds to an output file
-    std::ofstream file("pointrobotbounds.txt");
+    std::ofstream file("txt_out/pointrobotbounds.txt");
     file << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
 
     // Create an instance of space information for the state space
