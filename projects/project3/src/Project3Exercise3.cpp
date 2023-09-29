@@ -36,7 +36,7 @@ void benchmarkApartment()
     int run_count = 50;
 
     // Initialize runtime and memory limit variables. 
-    double runtime_lim = 500.0;
+    double runtime_lim = 350.0;
     double memory_lim = 10000.0;
 
     /*
@@ -103,7 +103,7 @@ void benchmarkHome()
 
     // Initialize runtime and memory limit variables. 
     // Without these, the benchmark risks running forever.
-    double runtime_lim = 500.0;
+    double runtime_lim = 350.0;
     double memory_lim = 100000.0;
 
     /*
