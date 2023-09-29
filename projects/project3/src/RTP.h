@@ -47,7 +47,6 @@ namespace ompl
             /*Define the clear() function */
 			void clear() override;
 
-
 			/* Set the goal bias. Usually between 0.0 and 1.0 and
                 ideally around 0.05, per the RRT files provided on Github.*/
 			void setGoalBias(double goalBias)
@@ -99,7 +98,7 @@ namespace ompl
 			};
 
 			/* Free memory */
-			void freeMemory();
+			// void freeMemory();
 
 			/* Function to find distance between nodes*/
 			double distanceFunction(const Motion *a, const Motion *b) const
@@ -116,10 +115,6 @@ namespace ompl
 
 			/* Maximum node length. We assume it is extremely small, hence we use 0..*/
 			double maxDistance_{0.};
-
-            // what are these for again?
-            //DirectedControlSamplerPtr controlSampler;
-            //const SpaceInformation *siC_;
 
 			/* RNG generator*/
 			RNG rng_;

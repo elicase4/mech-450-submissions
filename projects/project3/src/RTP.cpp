@@ -48,36 +48,26 @@ abstracted away in OMPL so that planners can be implemented generically.*/
 /* Define the planner. This was taken from the RRT.cpp file and edited to remove all intermediate states instances. */
 ompl::geometric::RTP::RTP(const ompl::base::SpaceInformationPtr &si) : ompl::base::Planner(si, "RTP") {
 	
-	// allow approximate solutions
+	// allow approximate  and direct solutions
 	specs_.approximateSolutions = true;
-
-	// i assume this means allow direct solutions?
 	specs_.directed = true;
 
 	// declare the range and goal bias parameters based on pre-determined settings
 	Planner::declareParam<double>("range", this, &RTP::setRange, &RTP::getRange, "0.:1.:10000.");
 	Planner::declareParam<double>("goal_bias", this, &RTP::setGoalBias, &RTP::getGoalBias, "0.:.05:1.");
-
 }
 
-/* Deconstruction and memory freeing */
+/* Deconstructor */
 ompl::geometric::RTP::~RTP() {
-	freeMemory();
+	NodeVec.clear();
 }
 
 /* Clear function to remove all nodes from memory after the planner is done */
 void ompl::geometric::RTP::clear() {
 	Planner::clear();
 	sampler_.reset();
-	freeMemory();
-	NodeVec.clear(); 
-	lastGoalMotion_ = nullptr;
-}
-
-/* Clear the vector that holds the motions of our tree */
-void ompl::geometric::RTP::freeMemory()
-{
 	NodeVec.clear();
+	lastGoalMotion_ = nullptr;
 }
 
 /* Main solve function*/
@@ -97,7 +87,6 @@ ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerT
 	{
 		// create a node (Motion) pointer, initialize first node with start state
 		auto *motion = new Motion(si_); 
-
 		// Copy the state into the SpaceInformation variable
 		si_->copyState(motion->state, st); 
 
@@ -106,24 +95,21 @@ ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerT
 	}
 
 	// If there are no nodes in the NodeVec vector, then there are no valid start states. Throw error if so.
-	if (NodeVec.size() == 0) 
+  if (NodeVec.size() == 0) 
 	{
 		OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
 		return ompl::base::PlannerStatus::INVALID_START;
 	}
 
-	// no clue what this does, but it looks like it has to do with allocating memory from the sampler to the SpaceInformation.
+	// If no sampler is allocated by default, add it from the state information
 	if (!sampler_)
 		sampler_ = si_->allocStateSampler();
-
-	// Print out the number of states in the tree when planning begins.
-	OMPL_INFORM("%s: Starting planning with %u states already in datastructure", getName().c_str(), NodeVec.size());
 
 	// Initialize both solution pointers
 	Motion *solution = nullptr; 
 	Motion *approxsol = nullptr;
 
-	// no clue what this does either. looks like it has to do with finding the difference between the exact solution and approximate solution?
+	// Initialze variable that store approximate distance ot goal? 
 	double approxdif = std::numeric_limits<double>::infinity();
 
 	// create new node in the space
@@ -215,7 +201,7 @@ ompl::base::PlannerStatus ompl::geometric::RTP::solve(const ompl::base::PlannerT
 	OMPL_INFORM("%s: Created %u states", getName().c_str(), NodeVec.size());
 
 	// clear NodeVec so subsequent runs don't take from previous runs
-	freeMemory();
+  NodeVec.clear();
 
 	/* return the determined solution. */
 	return {solved, approximate};
