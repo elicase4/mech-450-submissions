@@ -44,8 +44,10 @@ void benchmarkApartment()
     the environment. 
     */
 
-    std::string robot = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_robot.dae";
-    std::string world = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_env.dae";
+    std::string robot_name = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_robot.dae";
+    std::string world_name = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Apartment_env.dae";
+    setup.setRobotMesh(robot_name);
+    setup.setEnvironmentMesh(world_name);
 
     // Initialize the start state (values taken from the robot.dae file)
     ompl::base::ScopedState<ompl::base::SE3StateSpace> start(setup.getSpaceInformation());
@@ -108,9 +110,10 @@ void benchmarkHome()
     Set up the mesh and environments. These require calling the .dae files for 
     the environment. 
     */
-
-    std::string robot = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_robot.dae";
-    std::string world = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_env.dae";
+    std::string robot_name = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_robot.dae";
+    std::string world_name = std::string(OMPLAPP_RESOURCE_DIR) + "/3D/Home_env.dae";
+    setup.setRobotMesh(robot_name);
+    setup.setEnvironmentMesh(world_name);
 
     // Initialize the start state (values taken from the robot.dae file)
     ompl::base::ScopedState<ompl::base::SE3StateSpace> start(setup.getSpaceInformation());
