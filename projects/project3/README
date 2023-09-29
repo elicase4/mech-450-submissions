@@ -38,3 +38,11 @@ visualize your paths generated in Exercise 2 for the report, and this
 visualization will be an invaluable tool for your debugging process. You can
 copy code provided from the OMPL tutorial as a starting point for your
 visualization, or you can implement something in your favorite language.
+
+Notes from Eli:
+Run the visualization script as follows:
+./VizPathAndEnvironment.py [robot path txt] [enviornment txt] [robot bounds txt] --[robot type flag: point-robot or box_robot] [numbering flag, ex: -n 2]
+
+Ex: ./VizPathAndEnvironment.py boxrobot.txt env2.txt boxrobotbounds.txt --point-robot -n 2
+
+Note that by defualt, txt files ar eoutput to the txt_output folder.
