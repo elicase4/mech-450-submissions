@@ -1,0 +1,16 @@
+Notes from reading the project statement:
+
+Goals:
+- Implement state validity checkers and differential equations for both pendulum and vehicle.
+- Solve motion planning using RRT and visualize solution paths.
+- Also solve motion planning using KPIECE
+- Implement RG-RRT to solve pendulum and vehicle problems.
+- Compare RRT, RG-RRT, and KPIECE.
+
+
+Looks like each person can work on one of 1-3 on their own. Those working on 1 and 2 may have to work together to implement the validity checkers -- looks like problem 2 just asks to define projections.
+
+The person working on problem 3 can work entirely on their own, it seems. Depending on how long it takes the people on 1-2 to finish, they could potentially also do 4 on their own after 1-2 is completeed.
+
+PROBLEMS 1-2 ARE DUE ON TUESDAY
+
