@@ -82,9 +82,8 @@ ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
     cbounds.setHigh(500.0);
     cspace->setBounds(cbounds);
 
-    // Set state validity checker to true since there are no environment obstacles
-    // Set to always evaluate to true?
-    
+    // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
+
     return nullptr;
 }
 
