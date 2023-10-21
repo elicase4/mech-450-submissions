@@ -21,6 +21,9 @@
 // Global constant for gravitational acceleration
 #define G 9.81
 
+// Global constant for pi
+#define PI 3.14159
+
 // Your projection for the pendulum
 class PendulumProjection : public ompl::base::ProjectionEvaluator
 {
@@ -48,19 +51,40 @@ public:
 
 void pendulumODE(const ompl::control::ODESolver::StateType &q, const ompl::control::Control* control, ompl::control::ODESolver::StateType &qdot)
 {
-   // Extract control values from control space object
-   const double* u = control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;  
+    // Extract control values from control space object
+    const double* u = control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;  
    
-   // Write the ODE into qdot
-   qdot.resize(2);  
-   qdot[0] = q[1];
-   qdot[1] = -G*cos(q[1]) + u[0];   
+    // Write the ODE into qdot
+    qdot.resize(2);  
+    qdot[0] = q[1];
+    qdot[1] = -G*cos(q[1]) + u[0];   
 }
 
 ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
 {
-    // TODO: Create and setup the pendulum's state space, control space, validity checker, everything you need for
-    // planning.
+    // TODO: Create and setup the pendulum's state space, control space, validity checker, everything you need for planning.
+   
+    // Create a state space
+    auto space(std::make_shared<ompl::base::RealVectorStateSpace>(2));
+
+    // Set the bounds on the state space
+    ompl::base::RealVectorBounds bounds(2);
+    bounds.setLow(-10.0);
+    bounds.setHigh(-10.0);
+    space->setBounds(bounds);
+
+    // Create a control space
+    auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 1)); 
+
+    // Set the bounds on the control space
+    ompl::base::RealVectorBounds cbounds(2);
+    cbounds.setLow(-500.0);
+    cbounds.setHigh(500.0);
+    cspace->setBounds(cbounds);
+
+    // Set state validity checker to true since there are no environment obstacles
+    // Set to always evaluate to true?
+    
     return nullptr;
 }
 
