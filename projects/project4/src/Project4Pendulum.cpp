@@ -1,7 +1,7 @@
 ///////////////////////////////////////
 // COMP/ELEC/MECH 450/550
 // Project 4
-// Authors: FILL ME OUT!!
+// Authors: Eli Case, Santi Parra-Vargas, Jason Ye
 //////////////////////////////////////
 
 #include <iostream>
@@ -11,8 +11,15 @@
 #include <ompl/control/SimpleSetup.h>
 #include <ompl/control/ODESolver.h>
 
+// Headers for state space and control space representations
+#include <ompl/control/spaces/RealVectorControlSpace.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+
 // Your implementation of RG-RRT
 #include "RG-RRT.h"
+
+// Global constant for gravitational acceleration
+#define G 9.81
 
 // Your projection for the pendulum
 class PendulumProjection : public ompl::base::ProjectionEvaluator
@@ -24,20 +31,30 @@ public:
 
     unsigned int getDimension() const override
     {
-        // TODO: The dimension of your projection for the pendulum
-        return 0;
+        // Set the dimension of the projection space to 2 for R^2.
+        return 2;
     }
 
-    void project(const ompl::base::State */* state */, Eigen::Ref<Eigen::VectorXd> /* projection */) const override
+    void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
-        // TODO: Your projection for the pendulum
+        // Extract state values from state space object
+        const double* state_values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+
+        // Set the projection components equal to the state variable compoenents.
+        projection(0) = state_values[0];
+        projection(1) = state_values[1];
     }
 };
 
-void pendulumODE(const ompl::control::ODESolver::StateType &/* q */, const ompl::control::Control */* control */,
-                 ompl::control::ODESolver::StateType &/* qdot */)
+void pendulumODE(const ompl::control::ODESolver::StateType &q, const ompl::control::Control* control, ompl::control::ODESolver::StateType &qdot)
 {
-    // TODO: Fill in the ODE for the pendulum's dynamics
+   // Extract control values from control space object
+   const double* u = control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;  
+   
+   // Write the ODE into qdot
+   qdot.resize(2);  
+   qdot[0] = q[1];
+   qdot[1] = -G*cos(q[1]) + u[0];   
 }
 
 ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
