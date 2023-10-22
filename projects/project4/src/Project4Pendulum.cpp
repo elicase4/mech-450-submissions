@@ -118,6 +118,9 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal, 0.05);
+
+    // Setup any other necessary information for planning
+    ss.setup();
     
     // Assign the simple setup information to the simple setup pointer
     ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
