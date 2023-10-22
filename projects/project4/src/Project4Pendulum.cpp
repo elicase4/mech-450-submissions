@@ -61,13 +61,13 @@ void pendulumODE(const ompl::control::ODESolver::StateType &q, const ompl::contr
 }
 
 // State validity checker
-bool isStateValid(const ompl::control::SpaceInformation, const ompl::base::State* state)
+bool isStateValid(const ompl::control::SpaceInformation* si, const ompl::base::State* state)
 {
     // Extract state values from State pointer
-    const double* state_values = state->as<ompl::RealVectorStateSpace::StateType>()->values;
+    const double* state_values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
    
     // Enforce that omega be within limits 
-    return si->statisfiesBounds(state) && abs(state_values[1]) <= 10.0;
+    return si->satisfiesBounds(state) && abs(state_values[1]) <= 10.0;
 }
 
 ompl::control::SimpleSetupPtr createPendulum(double torque)
@@ -93,11 +93,12 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     cspace->setBounds(cbounds);
 
     // Initialize simple setup pointer
-    ompl::control::SimpleSetupPtr ss(cspace);
+    ompl::control::SimpleSetupPtr ss;
+    // Initialize the simple setup pointer with control space information??????? I will figure this out soon.
 
     // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
-    ompl::control::SpaceInformation* si = ss.getSpaceInformation().get();
-    ss.setStateValidityChecker(
+    ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
+    ss->setStateValidityChecker(
             [si](const ompl::base::State* state) {return isStateValid(si, state); }); 
 
     return ss;
