@@ -20,9 +20,13 @@
 
 // Headers for RRT and KPIECE planners
 #include <ompl/control/planners/rrt/RRT.h>
+#include <ompl/control/planners/kpiece/KPIECE1.h>
 
 // Header for path and env output
 #include <fstream>
+
+// Header to assist file naming convention
+#include <string>
 
 // Global constant for gravitational acceleration
 #define G 9.81
@@ -134,43 +138,45 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
     // Print the problem settings
     ss->print(std::cout);
 
+    // Initialize planner variable
+    ompl::base::PlannerPtr planner;
+
+    // Initialize string variables
+    std::string outputMessageSuccess;
+    std::string outputMessageFailure;
+    std::string filePath;
+
     // Switch over planner choices
     switch (choice)
     {
         // Use RRT planner 
         case 1:
             {
-                // Input the planner information into simple setup
-                ss->setPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
+                // Instantiate the RRT Planner
+                planner = std::make_shared<ompl::control::RRT>(ss->getSpaceInformation());
+                                
+                // Set custom output messages and file names
+                outputMessageSuccess = "Solution Path was found for the pendulum using the RRT planner.";
+                outputMessageFailure = "No solution path was found for the pendulum using the RRT planner.";
+                filePath = "txt_output/pendulumRRT.txt";
 
-                // Setup the problem
-                ss->setup();
-
-                // Request to solve the planning problem within 240s of planning time
-                ompl::base::PlannerStatus solved = ss->solve(240.0);
-
-                // Output solution path if solved
-                if (solved)
-                {
-                    // Get the geoemtric solution path
-                    ompl::geometric::PathGeometric pathGeometric = ss->getSolutionPath().asGeometric();
-                    std::cout << "Solution Path was found for the pendulum using the RRT planner." << std::endl;
-
-                    // Output geometric solution path to file
-                    std::ofstream file("txt_output/pendulumRRT.txt");
-                    pathGeometric.print(file);
-                 }
-                 else
-                 {
-                    std::cout << "No solution path was found for the pendulum using the RRT planner." << std::endl;
-                 }
-                 break;
+                break;
             } 
 
         // Use KPIECE1 planner
         case 2:
             {
-            
+                // Instantiate the KPIECE1 Planner
+                planner = std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation());
+
+                // Add the pendulum projection to KPIECE1
+                // planner->setProjectionEvaluator(std::make_shared<ompl::base::ProjectionEvaluator>(PendulumProjection))
+
+                // Set custom output messages and file names
+                outputMessageSuccess = "Solution Path was found for the pendulum using the KPIECE1 planner.";
+                outputMessageFailure = "No solution path was found for the pendulum using the KPIECE1 planner.";
+                filePath = "txt_output/pendulumKPIECE1.txt";
+                
                 break;
             }
 
@@ -182,6 +188,32 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
 
             break;
             }
+       
+        // Input the planner information into simple setup
+        ss->setPlanner(planner);
+
+        // Setup the problem
+        ss->setup();
+
+        // Request to solve the planning problem within 240s of planning time
+        ompl::base::PlannerStatus solved = ss->solve(240.0);
+
+        // Output solution path if solved
+        if (solved)
+        {
+            // Get the geoemtric solution path
+            ompl::geometric::PathGeometric pathGeometric = ss->getSolutionPath().asGeometric();
+            std::cout << outputMessageSuccess << std::endl;
+
+            // Output geometric solution path to file
+            std::ofstream file(filePath);
+            pathGeometric.print(file);
+        }
+        else
+        {
+            std::cout << outputMessageFailure << std::endl;
+        }
+
     } 
 }
 
