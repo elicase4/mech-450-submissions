@@ -60,7 +60,17 @@ void pendulumODE(const ompl::control::ODESolver::StateType &q, const ompl::contr
     qdot[1] = -G*cos(q[1]) + u[0];   
 }
 
-ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
+// State validity checker
+bool isStateValid(const ompl::control::SpaceInformation, const ompl::base::State* state)
+{
+    // Extract state values from State pointer
+    const double* state_values = state->as<ompl::RealVectorStateSpace::StateType>()->values;
+   
+    // Enforce that omega be within limits 
+    return si->statisfiesBounds(state) && abs(state_values[1]) <= 10.0;
+}
+
+ompl::control::SimpleSetupPtr createPendulum(double torque)
 {
     // TODO: Create and setup the pendulum's state space, control space, validity checker, everything you need for planning.
    
@@ -69,8 +79,8 @@ ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
 
     // Set the bounds on the state space
     ompl::base::RealVectorBounds bounds(2);
-    bounds.setLow(-10.0);
-    bounds.setHigh(-10.0);
+    bounds.setLow(-15.0);
+    bounds.setHigh(15.0);
     space->setBounds(bounds);
 
     // Create a control space
@@ -78,13 +88,19 @@ ompl::control::SimpleSetupPtr createPendulum(double /* torque */)
 
     // Set the bounds on the control space
     ompl::base::RealVectorBounds cbounds(2);
-    cbounds.setLow(-500.0);
-    cbounds.setHigh(500.0);
+    cbounds.setLow(-torque);
+    cbounds.setHigh(torque);
     cspace->setBounds(cbounds);
 
-    // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
+    // Initialize simple setup pointer
+    ompl::control::SimpleSetupPtr ss(cspace);
 
-    return nullptr;
+    // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
+    ompl::control::SpaceInformation* si = ss.getSpaceInformation().get();
+    ss.setStateValidityChecker(
+            [si](const ompl::base::State* state) {return isStateValid(si, state); }); 
+
+    return ss;
 }
 
 void planPendulum(ompl::control::SimpleSetupPtr &/* ss */, int /* choice */)
