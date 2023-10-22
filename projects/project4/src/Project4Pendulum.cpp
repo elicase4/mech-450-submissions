@@ -21,9 +21,6 @@
 // Headers for RRT and KPIECE planners
 #include <ompl/control/planners/rrt/RRT.h>
 
-// Header for path output from control-based planning
-#include <ompl/control/PathControl.h>
-
 // Header for path and env output
 #include <fstream>
 
