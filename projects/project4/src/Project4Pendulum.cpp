@@ -49,7 +49,7 @@ public:
     }
 };
 
-void pendulumODE(const ompl::control::ODESolver::StateType &q, const ompl::control::Control* control, ompl::control::ODESolver::StateType &qdot)
+void pendulumODE(const ompl::control::ODESolver::StateType& q, const ompl::control::Control* control, ompl::control::ODESolver::StateType& qdot)
 {
     // Extract control values from control space object
     const double* u = control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;  
@@ -66,7 +66,7 @@ bool isStateValid(const ompl::control::SpaceInformation* si, const ompl::base::S
     // Extract state values from State pointer
     const double* state_values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
    
-    // Enforce that omega be within limits 
+    // Enforce that omega and torque be within limits 
     return si->satisfiesBounds(state) && abs(state_values[1]) <= 10.0;
 }
 
@@ -94,11 +94,30 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Initialize simple setup information
     ompl::control::SimpleSetup ss(cspace);
-
+    
     // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
     ompl::control::SpaceInformation* si = ss.getSpaceInformation().get();
     ss.setStateValidityChecker(
             [si](const ompl::base::State* state) {return isStateValid(si, state); }); 
+
+    // Initialze the ODE solver function to use as the state propagator
+    auto odeSolver = std::make_shared<ompl::control::ODEBasicSolver<>>(ss.getSpaceInformation(), &pendulumODE);
+
+    // Set the state propagator
+    ss.setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver));
+    
+    // Create the start state
+    ompl::base::ScopedState<> start(space);
+    start->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = -0.5*PI; 
+    start->as<ompl::base::RealVectorStateSpace::StateType>()->values[1] = 0.0; 
+    
+    // Create the goal state
+    ompl::base::ScopedState<> goal(space);
+    goal->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = 0.5*PI; 
+    goal->as<ompl::base::RealVectorStateSpace::StateType>()->values[1] = 0.0;
+
+    // Set the start and goal states
+    ss.setStartAndGoalStates(start, goal, 0.05);
     
     // Assign the simple setup information to the simple setup pointer
     ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
@@ -106,10 +125,26 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     return ssPtr;
 }
 
-void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int /*choice*/)
+void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int choice)
 {
     // TODO: Do some motion planning for the pendulum choice is what planner to use.
-      
+    switch (choice)
+    {
+        // Use RRT planner 
+        case 1:
+            
+            break;
+
+        // Use KPIECE1 planner
+        case 2:
+        
+            break;
+
+        // Use RG-RRT planner
+        case 3:
+            std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl; 
+            break;
+    } 
 }
 
 void benchmarkPendulum(ompl::control::SimpleSetupPtr &/* ss */)
