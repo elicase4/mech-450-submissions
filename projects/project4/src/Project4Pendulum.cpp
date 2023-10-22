@@ -94,7 +94,6 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Initialize simple setup pointer
     ompl::control::SimpleSetupPtr ss;
-    // Initialize the simple setup pointer with control space information??????? I will figure this out soon.
 
     // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
     ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
