@@ -108,8 +108,8 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
 void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int /*choice*/)
 {
-    // TODO: Do some motion planning for the pendulum
-    // choice is what planner to use.
+    // TODO: Do some motion planning for the pendulum choice is what planner to use.
+      
 }
 
 void benchmarkPendulum(ompl::control::SimpleSetupPtr &/* ss */)
