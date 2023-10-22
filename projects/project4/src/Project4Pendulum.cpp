@@ -11,12 +11,21 @@
 #include <ompl/control/SimpleSetup.h>
 #include <ompl/control/ODESolver.h>
 
+// Your implementation of RG-RRT
+#include "RG-RRT.h"
+
 // Headers for state space and control space representations
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 
-// Your implementation of RG-RRT
-#include "RG-RRT.h"
+// Headers for RRT and KPIECE planners
+#include <ompl/control/planners/rrt/RRT.h>
+
+// Header for path output from control-based planning
+#include <ompl/control/PathControl.h>
+
+// Header for path and env output
+#include <fstream>
 
 // Global constant for gravitational acceleration
 #define G 9.81
@@ -72,8 +81,6 @@ bool isStateValid(const ompl::control::SpaceInformation* si, const ompl::base::S
 
 ompl::control::SimpleSetupPtr createPendulum(double torque)
 {
-    // TODO: Create and setup the pendulum's state space, control space, validity checker, everything you need for planning.
-   
     // Create a state space
     auto space(std::make_shared<ompl::base::RealVectorStateSpace>(2));
 
@@ -119,9 +126,6 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal, 0.05);
 
-    // Setup any other necessary information for planning
-    ss.setup();
-    
     // Assign the simple setup information to the simple setup pointer
     ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
 
@@ -130,33 +134,57 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
 void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
 {
-    // TODO: Do some motion planning for the pendulum choice is what planner to use.
+    // Print the problem settings
+    ss->print(std::cout);
+
+    // Switch over planner choices
     switch (choice)
     {
         // Use RRT planner 
         case 1:
-            // Instantiate RRT planner
-            auto planner(std::make_shared<ompl::control::RRT>(ss));
-            
-            // Give the planner the problem definition
-            planner->setProblemDefinition(ss);
+            {
+                // Input the planner information into simple setup
+                ss->setPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
 
-            // Perform the setup for the planner
-            planner->setup(); 
-            
-            break;
+                // Setup the problem
+                ss->setup();
+
+                // Request to solve the planning problem within 240s of planning time
+                ompl::base::PlannerStatus solved = ss->solve(240.0);
+
+                // Output solution path if solved
+                if (solved)
+                {
+                    // Get the geoemtric solution path
+                    ompl::geometric::PathGeometric pathGeometric = ss->getSolutionPath().asGeometric();
+                    std::cout << "Solution Path was found for the pendulum using the RRT planner." << std::endl;
+
+                    // Output geometric solution path to file
+                    std::ofstream file("txt_output/pendulumRRT.txt");
+                    pathGeometric.print(file);
+                 }
+                 else
+                 {
+                    std::cout << "No solution path was found for the pendulum using the RRT planner." << std::endl;
+                 }
+                 break;
+            } 
 
         // Use KPIECE1 planner
         case 2:
-        
-            break;
+            {
+            
+                break;
+            }
 
         // Use RG-RRT planner
         case 3:
+            {
             // Note to implement RG-RRT later
             std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl;
 
             break;
+            }
     } 
 }
 
