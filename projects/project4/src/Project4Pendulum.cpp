@@ -92,18 +92,21 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     cbounds.setHigh(torque);
     cspace->setBounds(cbounds);
 
-    // Initialize simple setup pointer
-    ompl::control::SimpleSetupPtr ss;
+    // Initialize simple setup information
+    ompl::control::SimpleSetup ss(cspace);
 
     // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
-    ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
-    ss->setStateValidityChecker(
+    ompl::control::SpaceInformation* si = ss.getSpaceInformation().get();
+    ss.setStateValidityChecker(
             [si](const ompl::base::State* state) {return isStateValid(si, state); }); 
+    
+    // Assign the simple setup information to the simple setup pointer
+    ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
 
-    return ss;
+    return ssPtr;
 }
 
-void planPendulum(ompl::control::SimpleSetupPtr &/* ss */, int /* choice */)
+void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int /*choice*/)
 {
     // TODO: Do some motion planning for the pendulum
     // choice is what planner to use.
