@@ -128,13 +128,21 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     return ssPtr;
 }
 
-void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int choice)
+void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
 {
     // TODO: Do some motion planning for the pendulum choice is what planner to use.
     switch (choice)
     {
         // Use RRT planner 
         case 1:
+            // Instantiate RRT planner
+            auto planner(std::make_shared<ompl::control::RRT>(ss));
+            
+            // Give the planner the problem definition
+            planner->setProblemDefinition(ss);
+
+            // Perform the setup for the planner
+            planner->setup(); 
             
             break;
 
@@ -145,7 +153,9 @@ void planPendulum(ompl::control::SimpleSetupPtr& /*ss*/, int choice)
 
         // Use RG-RRT planner
         case 3:
-            std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl; 
+            // Note to implement RG-RRT later
+            std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl;
+
             break;
     } 
 }
