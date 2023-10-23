@@ -132,6 +132,9 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
          ompl::base::ProjectionEvaluatorPtr(new PendulumProjection(ss.getStateSpace().get()))
     );
 
+    // Set the propgation step size
+    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+
     // Assign the simple setup information to the simple setup pointer
     ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
 
