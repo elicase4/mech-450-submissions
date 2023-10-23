@@ -9,6 +9,7 @@
 #include <ompl/base/ProjectionEvaluator.h>
 
 #include <ompl/control/SimpleSetup.h>
+#include <ompl/base/spaces/SE2StateSpace.h>
 #include <ompl/control/ODESolver.h>
 
 // The collision checker routines
@@ -17,35 +18,113 @@
 // Your implementation of RG-RRT
 #include "RG-RRT.h"
 
+#include <ompl/control/SimpleSetup.h>
+#include <ompl/control/ODESolver.h>
+
+// Headers for state space and control space representations
+#include <ompl/control/spaces/RealVectorControlSpace.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
+
+// Headers for RRT and KPIECE planners and projection evaluator
+#include <ompl/control/planners/rrt/RRT.h>
+#include <ompl/control/planners/kpiece/KPIECE1.h>
+
+// Header for path and env output
+#include <fstream>
+
+// Header to assist file naming convention
+#include <string>
+
 // Your projection for the car
 class CarProjection : public ompl::base::ProjectionEvaluator
 {
 public:
-    CarProjection(const ompl::base::StateSpace *space) : ProjectionEvaluator(space)
+    CarProjection(const ompl::base::StateSpace* space) : ProjectionEvaluator(space)
     {
     }
 
     unsigned int getDimension() const override
     {
         // TODO: The dimension of your projection for the car
-        return 0;
+        return 2;
     }
 
-    void project(const ompl::base::State * /* state */, Eigen::Ref<Eigen::VectorXd> /* projection */) const override
+    void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
         // TODO: Your projection for the car
+        auto r2 = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+
+        // Project the robot's state into a 2D space
+        projection[0] = r2->values[0];  
+        projection[1] = r2->values[1];  
+
     }
 };
 
-void carODE(const ompl::control::ODESolver::StateType & /* q */, const ompl::control::Control * /* control */,
-            ompl::control::ODESolver::StateType & /* qdot */)
+void carODE(const ompl::control::ODESolver::StateType& q, const ompl::control::Control* control,
+            ompl::control::ODESolver::StateType& qdot)
 {
-    // TODO: Fill in the ODE for the car's dynamics
+        // Extract control inputs: angular velocity and forward acceleration.
+        const double* velocity = control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;
+
+        // Extract the car's current state variables.
+        const double carOrientation = q[2];
+        const double carVelocity = q[3];
+
+        // Initialize the state derivative vector 
+        qdot.resize(q.size(), 0);
+
+        // Calculate the time derivatives of the state variables
+        qdot[0] = carVelocity * cos(carOrientation); 
+        qdot[1] = carVelocity * sin(carOrientation); 
+        qdot[2] = velocity[0]; 
+        qdot[3] = velocity[1]; 
 }
 
-void makeStreet(std::vector<Rectangle> & /* obstacles */)
+void makeStreet(std::vector<Rectangle>& obstacles)
 {
     // TODO: Fill in the vector of rectangles with your street environment.
+    Rectangle rec1;
+    Rectangle rec2;
+    Rectangle rec3;
+
+    rec1.x = 0;
+    rec1.y = 0;
+    rec1.width = 2;
+    rec1.height = 5;
+
+    rec2.x = 3;
+    rec2.y = 3;
+    rec2.width = 2;
+    rec2.height = 2;
+
+    rec3.x = 7;
+    rec3.y = 4;
+    rec3.width = 1;
+    rec3.height = 4;
+
+    obstacles.push_back(rec1);
+    obstacles.push_back(rec2);
+    obstacles.push_back(rec3);
+
+
+}
+
+bool isValidStateCar(ompl::control::SpaceInformation* si, const ompl::base::State* state, const std::vector<Rectangle>& obstacles)
+{
+    // check for collisions
+    auto r2 = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double x = r2->values[0];
+    double y = r2->values[1];
+    double orientation = r2->values[2];
+
+    return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles);
+}
+
+void carPostIntegration(const ompl::base::State* state)
+{
+    ompl::base::SO2StateSpace SO2;
+    SO2.enforceBounds(state->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
 }
 
 ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */)
@@ -54,10 +133,47 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */
     return nullptr;
 }
 
-void planCar(ompl::control::SimpleSetupPtr &/* ss */, int /* choice */)
+void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
 {
     // TODO: Do some motion planning for the car
     // choice is what planner to use.
+    if (choice == 1)
+    {
+        //RRT
+        ss->getSpaceInformation()->setPropagationStepSize(0.05);
+        ss->setPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
+    }
+    else if (choice == 2)
+    {
+        //KPIECE1
+        ss->getSpaceInformation()->setPropagationStepSize(0.05);
+        ss->setPlanner(std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation()));
+    }
+    else if (choice == 3)
+    {
+        //RG-RRT
+        ss->getSpaceInformation()->setPropagationStepSize(0.05);
+        ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+    }
+    
+    ss->setup();
+    ompl::base::PlannerStatus solved = ss->solve(300.0);
+    
+    if (solved)
+    {
+        // Get the geoemtric solution path
+        ompl::geometric::PathGeometric pathGeometric = ss->getSolutionPath().asGeometric();
+        std::cout << outputMessageSuccess << std::endl;
+
+        // Output geometric solution path to file
+        std::ofstream file(filePath);
+        pathGeometric.print(file);
+    }
+    else
+    {
+        std::cout << outputMessageFailure << std::endl;
+    }
+
 }
 
 void benchmarkCar(ompl::control::SimpleSetupPtr &/* ss */)
