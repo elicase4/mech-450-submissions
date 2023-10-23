@@ -21,7 +21,6 @@
 // Headers for RRT and KPIECE planners and projection evaluator
 #include <ompl/control/planners/rrt/RRT.h>
 #include <ompl/control/planners/kpiece/KPIECE1.h>
-// #include <ompl/base/ProjectionEvaluator.h>
 
 // Header for path and env output
 #include <fstream>
