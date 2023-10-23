@@ -125,11 +125,40 @@ namespace ompl
 
                     // Create the reachable set (this is what separates RGRRT from the "normal" RRT!!)
                     std::vector<Motion*> ReachS;
+            };
+
+            // Free the planner's memory after
+            void freeMemory();
+
+            // Compute distances between motions 
+
+            double distanceFunction(const Motion *a, const Motion *b) const
+            {
+                return si_->distance(a->state,b->state);
             }
 
+            // State sampler
+            base::StateSamplerPtr sampler_;
 
+            // Control sampler
+            DirectedControlSamplerPtr controlSampler_;
 
+            const SpaceInformation *siC_;
 
+            // set the goal bias
+            double goalBias_{0.05};
+
+            // Define whether we want to add any intermediate states to the built motion tree. Here, we set it to false.
+            bool addIntermediateStates_{false};
+
+            // Find the latest goal motion.
+            Motion *lastGoalMotion_{nullptr};
+
+            // Generate the reachable set (NEW)
+            void GenerateReachableSet(Motion* motion);
+
+            // Select a reachable motion (NEW)
+            int selectReachableMotion(const Motion* near, const Motion* rand);
 
         };
 
