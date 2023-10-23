@@ -18,9 +18,10 @@
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 
-// Headers for RRT and KPIECE planners
+// Headers for RRT and KPIECE planners and projection evaluator
 #include <ompl/control/planners/rrt/RRT.h>
 #include <ompl/control/planners/kpiece/KPIECE1.h>
+// #include <ompl/base/ProjectionEvaluator.h>
 
 // Header for path and env output
 #include <fstream>
@@ -38,7 +39,7 @@
 class PendulumProjection : public ompl::base::ProjectionEvaluator
 {
 public:
-    PendulumProjection(const ompl::base::StateSpace *space) : ProjectionEvaluator(space)
+    PendulumProjection(const ompl::base::StateSpace* space) : ProjectionEvaluator(space)
     {
     }
 
@@ -126,6 +127,11 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal, 0.05);
+    
+    // Add the pendulum projection for KPIECE1
+    ss.getStateSpace()->registerDefaultProjection(
+         ompl::base::ProjectionEvaluatorPtr(new PendulumProjection(ss.getStateSpace().get()))
+    );
 
     // Assign the simple setup information to the simple setup pointer
     ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
@@ -169,9 +175,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
                 // Instantiate the KPIECE1 Planner
                 planner = std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation());
 
-                // Add the pendulum projection to KPIECE1
-                // planner->setProjectionEvaluator(std::make_shared<ompl::base::ProjectionEvaluator>(PendulumProjection))
-
                 // Set custom output messages and file names
                 outputMessageSuccess = "Solution Path was found for the pendulum using the KPIECE1 planner.";
                 outputMessageFailure = "No solution path was found for the pendulum using the KPIECE1 planner.";
@@ -183,10 +186,10 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         // Use RG-RRT planner
         case 3:
             {
-            // Note to implement RG-RRT later
-            std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl;
+                // Note to implement RG-RRT later
+                std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl;
 
-            break;
+                break;
             }
        
         // Input the planner information into simple setup
@@ -213,7 +216,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         {
             std::cout << outputMessageFailure << std::endl;
         }
-
     } 
 }
 
