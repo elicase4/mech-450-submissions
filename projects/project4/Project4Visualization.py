@@ -41,8 +41,9 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length)
     env_add = []
     with open(env_file) as data:
         for line in data:
-            env_nums = [float(val) for val in line.strip().split(',')]
-            env_add.append(env_nums)
+            if line.strip():
+                env_nums = [float(val) for val in line.strip().split(',')]
+                env_add.append(env_nums)
     env_arr = numpy.array(env_add, dtype=numpy.float64)
     
     bounds_add = []
@@ -79,7 +80,7 @@ def gen_path_vis(path_arr, env_arr, env_bounds, file_num):
     ax.set_ylim(env_bounds[2], env_bounds[3])
 
     # Add the computed path
-    plt.plot(path_arr[:,0], path_arr[:,1], '-', color='yellow')
+    plt.plot(path_arr[:,0], path_arr[:,1], '-', color='blue')
 
     plt.savefig('figures/pathenv' + file_num + '.png')
     plt.show()
