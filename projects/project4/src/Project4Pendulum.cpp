@@ -114,6 +114,14 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     // Set the state propagator
     ss.setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver));
     
+    // Set the propgation step size
+    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+    
+    // Add the pendulum projection for KPIECE1
+    ss.getStateSpace()->registerDefaultProjection(
+         ompl::base::ProjectionEvaluatorPtr(new PendulumProjection(ss.getStateSpace().get()))
+    );
+    
     // Create the start state
     ompl::base::ScopedState<> start(space);
     start->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = -0.5*PI; 
@@ -126,17 +134,9 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Set the start and goal states
     ss.setStartAndGoalStates(start, goal, 0.05);
-    
-    // Add the pendulum projection for KPIECE1
-    ss.getStateSpace()->registerDefaultProjection(
-         ompl::base::ProjectionEvaluatorPtr(new PendulumProjection(ss.getStateSpace().get()))
-    );
-
-    // Set the propgation step size
-    ss->getSpaceInformation()->setPropagationStepSize(0.05);
 
     // Assign the simple setup information to the simple setup pointer
-    ompl::control::SimpleSetupPtr ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
+    auto ssPtr = std::make_shared<ompl::control::SimpleSetup>(ss);
 
     return ssPtr;
 }
