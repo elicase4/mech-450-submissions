@@ -106,7 +106,8 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
     ompl::control::SpaceInformation* si = ss.getSpaceInformation().get();
     ss.setStateValidityChecker(
-            [si](const ompl::base::State* state) {return isStateValid(si, state); }); 
+            [si](const ompl::base::State* state) {return isStateValid(si, state);}
+    ); 
 
     // Initialze the ODE solver function to use as the state propagator
     auto odeSolver = std::make_shared<ompl::control::ODEBasicSolver<>>(ss.getSpaceInformation(), &pendulumODE);
