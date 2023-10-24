@@ -118,7 +118,7 @@ bool isValidStateCar(ompl::control::SpaceInformation* si, const ompl::base::Stat
     return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles);
 }
 
-void carPostIntegration(const ompl::base::State* state)
+void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
 {
     ompl::base::SO2StateSpace SO2;
     SO2.enforceBounds(state->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
