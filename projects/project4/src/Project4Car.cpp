@@ -163,7 +163,7 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
     else if (choice == 3)
     {
         //RG-RRT
-        ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+        // ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
         
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RG-RRT planner.";
