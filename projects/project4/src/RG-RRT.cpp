@@ -9,5 +9,3 @@
 #include "ompl/base/goals/GoalSampleableRegion.h"
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <limits>
-
-

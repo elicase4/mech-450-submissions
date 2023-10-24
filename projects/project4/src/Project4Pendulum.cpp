@@ -116,7 +116,7 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     ss.setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver));
     
     // Set the propgation step size
-    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+    ss.getSpaceInformation()->setPropagationStepSize(0.05);
     
     // Add the pendulum projection for KPIECE1
     ss.getStateSpace()->registerDefaultProjection(
@@ -147,9 +147,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
     // Print the problem settings
     ss->print(std::cout);
 
-    // Initialize planner variable
-    ompl::base::PlannerPtr planner;
-
     // Initialize string variables
     std::string outputMessageSuccess;
     std::string outputMessageFailure;
@@ -162,7 +159,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         case 1:
             {
                 // Instantiate the RRT Planner
-                planner = std::make_shared<ompl::control::RRT>(ss->getSpaceInformation());
+                ss->setPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
                                 
                 // Set custom output messages and file names
                 outputMessageSuccess = "Solution Path was found for the pendulum using the RRT planner.";
@@ -176,7 +173,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         case 2:
             {
                 // Instantiate the KPIECE1 Planner
-                planner = std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation());
+                ss->setPlanner(std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation()));
 
                 // Set custom output messages and file names
                 outputMessageSuccess = "Solution Path was found for the pendulum using the KPIECE1 planner.";
@@ -189,16 +186,18 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         // Use RG-RRT planner
         case 3:
             {
-                // Note to implement RG-RRT later
-                std::cout << "RG-RRT Planner to be implemented after checkpoint 1." << std::endl;
+                // Instantiate the RG-RRT Planner
+                // ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+
+                // Set custom output messages and file names
+                outputMessageSuccess = "Solution Path was found for the pendulum using the RG-RRT planner.";
+                outputMessageFailure = "No solution path was found for the pendulum using the RG-RRT planner.";
+                filePath = "txt_output/pendulumRGRRT.txt";
 
                 break;
             }
        
-        // Input the planner information into simple setup
-        ss->setPlanner(planner);
-
-        // Setup the problem
+        // Setup any additional information for the problem
         ss->setup();
 
         // Request to solve the planning problem within 240s of planning time

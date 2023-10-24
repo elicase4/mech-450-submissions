@@ -6,11 +6,13 @@ LD_FLAGS=-lcollisionchecking `pkg-config --libs ompl`
 
 # The c++ compiler to invoke
 CXX=c++
-all: Project4Car Project4Pendulum
+all: Project4Pendulum 
+# Project4Car
 
 clean:
 	rm -f *.o
-	rm -f Project4Car Project4Pendulum
+	rm -f Project4Pendulum 
+# Project4Car
 
 %.o: src/%.cpp
 	$(CXX) -c $(CXX_FLAGS) $(INCLUDE_FLAGS) $< -o $@
