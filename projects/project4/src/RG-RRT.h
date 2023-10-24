@@ -26,12 +26,12 @@ namespace ompl
     namespace control
     {
         // TODO: Implement RGRRT as described
-
+        
         class RGRRT : public base::Planner
         {
 
         public:
-
+            /*
             // Basic constructor and destructor overrides
             RGRRT(const SpaceInformationPtr &si);
             ~RGRRT() override;
@@ -53,6 +53,7 @@ namespace ompl
             {
                 return goalBias_;
             }
+            */
 
             /* 
             Because we're using intermediate states and nearest neighbors for this project (vs project 3, where we 
@@ -60,6 +61,7 @@ namespace ompl
             The bulk of this code just comes straight from the OMPL RRT code on the website and Github.
             */
 
+            /*
             // Get any added intermediate states that are to be added to the tree itself.
             bool getIntermediateStates() const
             {
@@ -159,9 +161,8 @@ namespace ompl
 
             // Select a reachable motion (NEW)
             int selectReachableMotion(const Motion* near, const Motion* rand);
-
+            */
         };
-
     }  // namespace control 
 }  // namespace ompl
 

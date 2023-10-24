@@ -1,7 +1,7 @@
 ///////////////////////////////////////
 // COMP/ELEC/MECH 450/550
 // Project 4
-// Authors: FILL ME OUT!!
+// Authors: Eli Case, Santi Parra-Vargas, Jason Ye
 //////////////////////////////////////
 
 #include <iostream>
@@ -45,13 +45,11 @@ public:
 
     unsigned int getDimension() const override
     {
-        // TODO: The dimension of your projection for the car
         return 2;
     }
 
     void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
-        // TODO: Your projection for the car
         auto r2 = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
         // Project the robot's state into a 2D space
@@ -83,7 +81,6 @@ void carODE(const ompl::control::ODESolver::StateType& q, const ompl::control::C
 
 void makeStreet(std::vector<Rectangle>& obstacles)
 {
-    // TODO: Fill in the vector of rectangles with your street environment.
     Rectangle rec1;
     Rectangle rec2;
     Rectangle rec3;
@@ -130,31 +127,50 @@ void carPostIntegration(const ompl::base::State* state)
 ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */)
 {
     // TODO: Create and setup the car's state space, control space, validity checker, everything you need for planning.
+    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+
     return nullptr;
 }
 
 void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
 {
-    // TODO: Do some motion planning for the car
+    // Initialize string variables
+    std::string outputMessageSuccess;
+    std::string outputMessageFailure;
+    std::string filePath;
+    
     // choice is what planner to use.
     if (choice == 1)
     {
         //RRT
-        ss->getSpaceInformation()->setPropagationStepSize(0.05);
         ss->setPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
+
+        // Set custom output messages and file names
+        outputMessageSuccess = "Solution Path was found for the car using the RRT planner.";
+        outputMessageFailure = "No solution path was found for the car using the RRT planner.";
+        filePath = "txt_output/carRRT.txt"; 
     }
     else if (choice == 2)
     {
         //KPIECE1
-        ss->getSpaceInformation()->setPropagationStepSize(0.05);
         ss->setPlanner(std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation()));
+        
+        // Set custom output messages and file names
+        outputMessageSuccess = "Solution Path was found for the car using the KPIECE1 planner.";
+        outputMessageFailure = "No solution path was found for the car using the KPIECE1 planner.";
+        filePath = "txt_output/carKPIECE1.txt"; 
     }
     else if (choice == 3)
     {
         //RG-RRT
-        ss->getSpaceInformation()->setPropagationStepSize(0.05);
         ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+        
+        // Set custom output messages and file names
+        outputMessageSuccess = "Solution Path was found for the car using the RG-RRT planner.";
+        outputMessageFailure = "No solution path was found for the car using the RG-RRT planner.";
+        filePath = "txt_output/carRGRRT.txt"; 
     }
+    
     
     ss->setup();
     ompl::base::PlannerStatus solved = ss->solve(300.0);
