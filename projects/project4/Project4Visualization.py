@@ -1,5 +1,3 @@
-# This is Santi's modified version of VizPathAndEnvironment.py
-
 #!/usr/bin/env python3 
 
 # Import
@@ -34,7 +32,7 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length)
         path_arr = numpy.append(path_add1, numpy.array(path_add2).reshape(-1,1), axis=1)
     
     else:
-        raise ValueError("Need to specify point or box robot.")
+        raise ValueError("Need to specify pendulum or car.")
 
     env_add = []
     with open(env_file) as data:
@@ -53,6 +51,7 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length)
     return path_arr, env_arr, env_bounds
     
 def gen_env_vis(env_arr, env_bounds, file_num):
+    
     # Visualize the environment
     fig, ax = plt.subplots()
 

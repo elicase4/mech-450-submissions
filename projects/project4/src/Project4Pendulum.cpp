@@ -51,11 +51,11 @@ public:
     void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
         // Extract state values from state space object
-        const double* state_values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+        const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
         // Set the projection components equal to the state variable compoenents.
-        projection(0) = state_values[0];
-        projection(1) = state_values[1];
+        projection(0) = stateValues[0];
+        projection(1) = stateValues[1];
     }
 };
 
@@ -74,10 +74,10 @@ void pendulumODE(const ompl::control::ODESolver::StateType& q, const ompl::contr
 bool isStateValid(const ompl::control::SpaceInformation* si, const ompl::base::State* state)
 {
     // Extract state values from State pointer
-    const double* state_values = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
    
     // Enforce that omega and torque be within limits 
-    return si->satisfiesBounds(state) && abs(state_values[1]) <= 10.0;
+    return si->satisfiesBounds(state) && abs(stateValues[1]) <= 10.0;
 }
 
 ompl::control::SimpleSetupPtr createPendulum(double torque)
@@ -90,6 +90,14 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     bounds.setLow(-15.0);
     bounds.setHigh(15.0);
     space->setBounds(bounds);
+
+    // Record the environment bounds to an output file
+    std::ofstream boundsFile("txt_out/pendulumbounds.txt")
+    boundsFile << bounds.low[0] << "," << bounds.high[0] << "," << bounds.low[1] << "," << bounds.high[1] << std::endl;
+    // Output obstacle coordinates as blank
+    std::ofstream envFile("txt_output/pendulumenv.txt");
+    envFile << std::endl;
+    std::cout << "Pendulum environment created using " << 0 << " total obstacles."<< std::endl;
 
     // Create a control space
     auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 1)); 
@@ -211,8 +219,8 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
             std::cout << outputMessageSuccess << std::endl;
 
             // Output geometric solution path to file
-            std::ofstream file(filePath);
-            pathGeometric.print(file);
+            std::ofstream pathFile(filePath);
+            pathGeometric.print(pathFile);
         }
         else
         {

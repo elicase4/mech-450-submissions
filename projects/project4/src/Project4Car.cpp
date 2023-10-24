@@ -45,17 +45,17 @@ public:
 
     unsigned int getDimension() const override
     {
+        // Set the dimension of the projection space to 2 for R^2
         return 2;
     }
 
     void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
-        auto r2 = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+        const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
 
         // Project the robot's state into a 2D space
-        projection[0] = r2->values[0];  
-        projection[1] = r2->values[1];  
-
+        projection[0] = stateValues[0];  
+        projection[1] = stateValues[1];  
     }
 };
 
@@ -70,7 +70,7 @@ void carODE(const ompl::control::ODESolver::StateType& q, const ompl::control::C
         const double carVelocity = q[3];
 
         // Initialize the state derivative vector 
-        qdot.resize(q.size(), 0);
+        qdot.resize(4);
 
         // Calculate the time derivatives of the state variables
         qdot[0] = carVelocity * cos(carOrientation); 
@@ -103,17 +103,17 @@ void makeStreet(std::vector<Rectangle>& obstacles)
     obstacles.push_back(rec1);
     obstacles.push_back(rec2);
     obstacles.push_back(rec3);
-
-
 }
 
 bool isValidStateCar(ompl::control::SpaceInformation* si, const ompl::base::State* state, const std::vector<Rectangle>& obstacles)
 {
     // check for collisions
-    auto r2 = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    double x = r2->values[0];
-    double y = r2->values[1];
-    double orientation = r2->values[2];
+    /*
+    const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
+    double x = stateValues[0];
+    double y = stateValues[1];
+    double orientation = stateValues[2];f
+    */
 
     return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles);
 }
