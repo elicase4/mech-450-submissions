@@ -121,13 +121,13 @@ bool isValidStateCar(ompl::control::SpaceInformation* si, const ompl::base::Stat
 void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
 {
     ompl::base::SO2StateSpace SO2;
-    SO2.enforceBounds(state->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
+    SO2.enforceBounds(result->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
 }
 
 ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */)
 {
     // TODO: Create and setup the car's state space, control space, validity checker, everything you need for planning.
-    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+    //ss->getSpaceInformation()->setPropagationStepSize(0.05);
 
     return nullptr;
 }
