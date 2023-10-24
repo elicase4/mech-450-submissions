@@ -56,11 +56,12 @@ public:
     {
         // Extract state values from state space object
         auto compoundState = state->as<ompl::base::CompoundState>();
-        const double* stateValues = compoundState->as<ompl::base::RealVectorStateSpace::StateType>(1)->values;
+        const double theta = compoundState->as<ompl::base::SO2StateSpace::StateType>(1)->value;
+        const double omega = compoundState->as<ompl::base::RealVectorStateSpace::StateType>(1)->values[0];
 
         // Set the projection components equal to the state variable compoenents.
-        projection(0) = stateValues[0];
-        projection(1) = stateValues[1];
+        projection(0) = theta;
+        projection(1) = omega;
     }
 };
 
@@ -73,6 +74,12 @@ void pendulumODE(const ompl::control::ODESolver::StateType& q, const ompl::contr
     qdot.resize(2);  
     qdot[0] = q[1];
     qdot[1] = -G*cos(q[0]) + u[0];   
+}
+
+void pendulumPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
+{
+    ompl::base::SO2StateSpace SO2;
+    SO2.enforceBounds(result->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(1));
 }
 
 ompl::control::SimpleSetupPtr createPendulum(double torque)
@@ -121,7 +128,7 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     auto odeSolver(std::make_shared<ompl::control::ODEBasicSolver<>>(ss->getSpaceInformation(), &pendulumODE));
 
     // Set the state propagator
-    ss->setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver));
+    ss->setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver, &pendulumPostIntegration));
    
     // Set the propgation step size
     ss->getSpaceInformation()->setPropagationStepSize(0.05);
