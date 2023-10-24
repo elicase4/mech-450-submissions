@@ -98,7 +98,7 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     ompl::base::StateSpacePtr space = thetaSpace + omegaSpace;
 
     // Record the environment bounds to an output file
-    std::ofstream boundsFile("txt_out/pendulumbounds.txt");
+    std::ofstream boundsFile("txt_output/pendulumbounds.txt");
     boundsFile << omegaBounds.low[0] << "," << omegaBounds.high[0] << "," << omegaBounds.low[0] << "," << omegaBounds.high[0] << std::endl;
 
     // Output obstacle coordinates as blank

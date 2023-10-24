@@ -10,13 +10,17 @@ import sys
 
 def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length):
     if pendulum:
-        path_add = []
+        path_add1 = []
+        path_add2 = []
         with open(path_file) as data:
             for line in data:
                 if "RealVectorState" in line:
                     cart_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    path_add.append(cart_nums)
-        path_arr = numpy.array(path_add, dtype=numpy.float64)
+                    path_add1.append(cart_nums)
+                elif "SO2State" in line:
+                    rot_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
+                    path_add2.append(rot_nums[-1])
+        path_arr = numpy.append(path_add1, numpy.array(path_add2).reshape(-1,1), axis=1)
     
     elif car:
         path_add1 = []
