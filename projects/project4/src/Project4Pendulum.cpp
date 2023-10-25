@@ -48,7 +48,6 @@ public:
 
     unsigned int getDimension() const override
     {
-        // Set the dimension of the projection space to 1.
         return 2;
     }
 
@@ -60,8 +59,8 @@ public:
         const double omega = compoundState->as<ompl::base::RealVectorStateSpace::StateType>(1)->values[0];
 
         // Set the projection components equal to the state variable compoenents.
-        projection(0) = theta;
-        projection(1) = omega;
+        projection(0) = G*sin(theta); // pendulum specific potential energy
+        projection(1) = 0.5*omega*omega; // pendulum specific kinetic energy
     }
 };
 
@@ -211,8 +210,8 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
     // Setup any additional information for the problem
     ss->setup();
 
-    // Request to solve the planning problem within 240s of planning time
-    ompl::base::PlannerStatus solved = ss->solve(240.0);
+    // Request to solve the planning problem within 120s of planning time
+    ompl::base::PlannerStatus solved = ss->solve(120.0);
 
     // Output solution path if solved
     if (solved)
