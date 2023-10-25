@@ -60,7 +60,7 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length,
             bounds_add.extend(bounds_nums)
     env_bounds = numpy.array(bounds_add, dtype=numpy.float64)
 
-    control_bounds_nums = [val for val in control_bounds]
+    control_bounds_nums = [float(val) for val in control_bounds.strip().split()]
 
     return path_arr, env_arr, env_bounds, start_goal_nums, control_bounds_nums
     
@@ -107,7 +107,7 @@ def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_
     plt.grid()
     
     if (pendulum):
-        plt.title('Pendulum Solution with ' + planner + ' Planner and Torque of ' + control_bounds[0])
+        plt.title('Pendulum Solution with ' + planner + ' Planner and Torque of ' + str(control_bounds[0]))
         plt.xlabel(f'$\\omega$')
         plt.ylabel(f'$\\theta$')
         plt.savefig('figures/pendulum/pathenv' + file_num + '.png')
