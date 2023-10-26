@@ -35,9 +35,6 @@
 // Global constant for gravitational acceleration
 #define G 9.81
 
-// Global constant for pi
-#define PI 3.14159
-
 // Your projection for the pendulum
 class PendulumProjection : public ompl::base::ProjectionEvaluator
 {
@@ -137,12 +134,12 @@ ompl::control::SimpleSetupPtr createPendulum(double torque, std::string boundsFi
     
     // Create the start state
     ompl::base::ScopedState<> start(space);
-    start[0] = -0.5*PI; 
+    start[0] = -0.5*M_PI; 
     start[1] = 0.0; 
     
     // Create the goal state
     ompl::base::ScopedState<> goal(space);
-    goal[0] = 0.5*PI; 
+    goal[0] = 0.5*M_PI; 
     goal[1] = 0.0;
 
     // Set the start and goal states

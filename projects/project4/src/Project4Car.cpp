@@ -35,6 +35,9 @@
 // Header to assist file naming convention
 #include <string>
 
+// Header for math functions
+#include <math.h>
+
 // Your projection for the car
 class CarProjection : public ompl::base::ProjectionEvaluator
 {
@@ -98,7 +101,7 @@ void makeStreet(std::vector<Rectangle>& obstacles, std::string envFilePath)
     rec2.y = 2;
     rec2.width = 4;
     rec2.height = 3;
-
+    
     // Build Rectangle 3
     rec3.x = 6;
     rec3.y = 7;
@@ -155,8 +158,8 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
 
     // Set the bounds on the control space
     ompl::base::RealVectorBounds cbounds(2);
-    cbounds.setLow(-5.0);
-    cbounds.setHigh(5.0);
+    cbounds.setLow(-8.0);
+    cbounds.setHigh(8.0);
     cspace->setBounds(cbounds);
 
     // Assign the simple setup information to the simple setup pointer
@@ -165,8 +168,13 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
     // Set state validity checker to include collision checking and bounds checking
     ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
     ss->setStateValidityChecker(
-            [obstacles, si] (const ompl::base::State* state) { 
-                return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles); }
+            [obstacles, si] (const ompl::base::State* state) 
+            {   
+                auto compoundState = state->as<ompl::base::CompoundStateSpace::StateType>();
+                auto se2State = compoundState->as<ompl::base::SE2StateSpace::StateType>(0);
+                
+                return si->satisfiesBounds(state) && isValidStateSquare(se2State, 0.25, obstacles); 
+            }
     ); 
 
     // Initialze the ODE solver function to use as the state propagator
@@ -177,7 +185,7 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
    
     // Set the propgation step size
     ss->getSpaceInformation()->setPropagationStepSize(0.05);
-    
+
     // Add the pendulum projection for KPIECE1
     space->registerDefaultProjection(
          ompl::base::ProjectionEvaluatorPtr(new CarProjection(space.get()))
@@ -194,15 +202,15 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
     ompl::base::ScopedState<> goal(space);
     goal[0] = 9.0; 
     goal[1] = 1.0;
-    goal[2] = 0.0; 
+    goal[2] = -M_PI; 
     goal[3] = 0.0;
 
     // Set the start and goal states
-    ss->setStartAndGoalStates(start, goal, 0.1);
+    ss->setStartAndGoalStates(start, goal, 0.15);
 
     // Record the start and goal information to an output file
     std::ofstream startgoalFile(startgoalFilePath);
-    startgoalFile << start[0] << "," << start[1] << "," << goal[0] << "," << goal[1] << "," << 0.1 << std::endl;
+    startgoalFile << start[0] << "," << start[1] << "," << goal[0] << "," << goal[1] << "," << 0.15 << std::endl;
     
     return ss;
 }
@@ -244,9 +252,11 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
         outputMessageFailure = "No solution path was found for the car using the RG-RRT planner.";
     }
     
+    // Setup any additional information for the problem 
     ss->setup();
 
-    ompl::base::PlannerStatus solved = ss->solve(60.0);
+    // Solve the problem within 480s of planning time
+    ompl::base::PlannerStatus solved = ss->solve(480.0);
     
     if (solved)
     {
