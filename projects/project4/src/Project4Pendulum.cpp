@@ -48,7 +48,6 @@ public:
 
     unsigned int getDimension() const override
     {
-        // Set the dimension of the projection space to 1.
         return 2;
     }
 
@@ -60,8 +59,8 @@ public:
         const double omega = compoundState->as<ompl::base::RealVectorStateSpace::StateType>(1)->values[0];
 
         // Set the projection components equal to the state variable compoenents.
-        projection(0) = theta;
-        projection(1) = omega;
+        projection(0) = G*sin(theta); // pendulum specific potential energy
+        projection(1) = 0.5*omega*omega; // pendulum specific kinetic energy
     }
 };
 
@@ -82,7 +81,7 @@ void pendulumPostIntegration(const ompl::base::State* /*state*/, const ompl::con
     SO2.enforceBounds(result->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(1));
 }
 
-ompl::control::SimpleSetupPtr createPendulum(double torque)
+ompl::control::SimpleSetupPtr createPendulum(double torque, std::string boundsFilePath, std::string startgoalFilePath)
 {
     // Create the state spaces
     auto thetaSpace(std::make_shared<ompl::base::SO2StateSpace>());
@@ -98,12 +97,10 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
     ompl::base::StateSpacePtr space = thetaSpace + omegaSpace;
 
     // Record the environment bounds to an output file
-    std::ofstream boundsFile("txt_output/pendulumbounds.txt");
-    boundsFile << omegaBounds.low[0] << "," << omegaBounds.high[0] << "," << omegaBounds.low[0] << "," << omegaBounds.high[0] << std::endl;
+    std::ofstream boundsFile(boundsFilePath);
+    boundsFile << omegaBounds.low[0] << "," << omegaBounds.high[0] << "," << 0.5*omegaBounds.low[0] << "," << 0.5*omegaBounds.high[0] << std::endl;
 
-    // Output obstacle coordinates as blank
-    std::ofstream envFile("txt_output/pendulumenv.txt");
-    envFile << std::endl;
+    // Output the amunt of environment obstacles
     std::cout << "Pendulum environment created using " << 0 << " total obstacles."<< std::endl;
 
     // Create a control space
@@ -150,11 +147,15 @@ ompl::control::SimpleSetupPtr createPendulum(double torque)
 
     // Set the start and goal states
     ss->setStartAndGoalStates(start, goal, 0.05);
+    
+    // Record the start and goal information to an output file
+    std::ofstream startgoalFile(startgoalFilePath);
+    startgoalFile << start[1] << "," << start[0] << "," << goal[1] << "," << goal[0] << "," << 0.05 << std::endl;
 
     return ss;
 }
 
-void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
+void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathFilePath)
 {
     // Print the problem settings
     ss->print(std::cout);
@@ -162,7 +163,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
     // Initialize string variables
     std::string outputMessageSuccess;
     std::string outputMessageFailure;
-    std::string filePath;
 
     // Switch over planner choices
     switch (choice)
@@ -176,7 +176,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
             // Set custom output messages and file names
             outputMessageSuccess = "Solution Path was found for the pendulum using the RRT planner.";
             outputMessageFailure = "No solution path was found for the pendulum using the RRT planner.";
-            filePath = "txt_output/pendulumRRT.txt";
 
             break;
         } 
@@ -190,7 +189,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
             // Set custom output messages and file names
             outputMessageSuccess = "Solution Path was found for the pendulum using the KPIECE1 planner.";
             outputMessageFailure = "No solution path was found for the pendulum using the KPIECE1 planner.";
-            filePath = "txt_output/pendulumKPIECE1.txt";
                 
             break;
         }
@@ -204,7 +202,6 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
             // Set custom output messages and file names
             outputMessageSuccess = "Solution Path was found for the pendulum using the RG-RRT planner.";
             outputMessageFailure = "No solution path was found for the pendulum using the RG-RRT planner.";
-            filePath = "txt_output/pendulumRGRRT.txt";
 
             break;
         }
@@ -213,8 +210,8 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
     // Setup any additional information for the problem
     ss->setup();
 
-    // Request to solve the planning problem within 240s of planning time
-    ompl::base::PlannerStatus solved = ss->solve(40.0);
+    // Request to solve the planning problem within 120s of planning time
+    ompl::base::PlannerStatus solved = ss->solve(120.0);
 
     // Output solution path if solved
     if (solved)
@@ -224,7 +221,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice)
         std::cout << outputMessageSuccess << std::endl;
 
         // Output geometric solution path to file
-        std::ofstream pathFile(filePath);
+        std::ofstream pathFile(geopathFilePath);
         pathGeometric.print(pathFile);
     }
     else
@@ -238,8 +235,20 @@ void benchmarkPendulum(ompl::control::SimpleSetupPtr &/* ss */)
     // TODO: Do some benchmarking for the pendulum
 }
 
-int main(int /* argc */, char ** /* argv */)
+int main(int argc, char** argv)
 {
+    // Terminate if the correct number of input arguments are not provided
+    if (argc != 4)
+    {
+        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output]" << std::endl;
+        exit(1);
+    }
+
+    // Initialze input arguments for output text file names
+    std::string geopathFilePath(argv[1]);
+    std::string boundsFilePath(argv[2]);
+    std::string startgoalFilePath(argv[3]);
+    
     int choice;
     do
     {
@@ -264,7 +273,7 @@ int main(int /* argc */, char ** /* argv */)
     double torques[] = {3., 5., 10.};
     double torque = torques[which - 1];
 
-    ompl::control::SimpleSetupPtr ss = createPendulum(torque);
+    ompl::control::SimpleSetupPtr ss = createPendulum(torque, boundsFilePath, startgoalFilePath);
 
     // Planning
     if (choice == 1)
@@ -280,8 +289,9 @@ int main(int /* argc */, char ** /* argv */)
             std::cin >> planner;
         } while (planner < 1 || planner > 3);
 
-        planPendulum(ss, planner);
+        planPendulum(ss, planner, geopathFilePath);
     }
+
     // Benchmarking
     else if (choice == 2)
         benchmarkPendulum(ss);

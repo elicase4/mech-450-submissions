@@ -160,7 +160,7 @@ namespace ompl
             Motion *lastGoalMotion_{nullptr};
 
             // Generate the reachable set (NEW)
-            void GenerateReachableSet(Motion* motion);
+            void GRS(Motion* motion);
 
             // Select a reachable motion (NEW)
             int selectReachableMotion(const Motion* near, const Motion* rand);
