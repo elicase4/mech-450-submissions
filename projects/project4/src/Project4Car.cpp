@@ -127,9 +127,74 @@ void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control:
 ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */)
 {
     // TODO: Create and setup the car's state space, control space, validity checker, everything you need for planning.
-    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+    //ss->getSpaceInformation()->setPropagationStepSize(0.05);
 
-    return nullptr;
+    // Set the bounds on the state space
+    ompl::base::RealVectorBounds se2Bounds(2);
+    se2Bounds.setLow(0.0);
+    se2Bounds.setHigh(10.0);
+    se2Space->as<ompl::base::RealVectorStateSpace>()->setBounds(se2Bounds);
+
+    ompl::base::RealVectorBounds r1Bounds(1);
+    r1Bounds.setLow(-2.0);
+    r1Bounds.setHigh(2.0);
+    r1Space->as<ompl::base::RealVectorStateSpace>()->setBounds(r1Bounds);
+
+    // Create compound state space
+    ompl::base::StateSpacePtr space = se2Space + r1Space;
+
+
+    // Create a control space
+    auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 2)); 
+
+    // Set the bounds on the control space
+    ompl::base::RealVectorBounds cbounds(2);
+    cbounds.setLow(-1.0);
+    cbounds.setHigh(1.0);
+    cspace->setBounds(cbounds);
+
+    // Assign the simple setup information to the simple setup pointer
+    auto ss(std::make_shared<ompl::control::SimpleSetup>(cspace));
+    
+    // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
+    ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
+    ss->setStateValidityChecker(
+            [obstacles, si](const ompl::base::State* state) { 
+                return isValidStateCar(si, state, obstacles); }
+    ); 
+
+    // Initialze the ODE solver function to use as the state propagator
+    auto odeSolver(std::make_shared<ompl::control::ODEBasicSolver<>>(ss->getSpaceInformation(), &carODE));
+
+    // Set the state propagator
+    ss->setStatePropagator(ompl::control::ODESolver::getStatePropagator(odeSolver, &carPostIntegration));
+   
+    // Set the propgation step size
+    ss->getSpaceInformation()->setPropagationStepSize(0.05);
+    
+    // Add the pendulum projection for KPIECE1
+    space->registerDefaultProjection(
+         ompl::base::ProjectionEvaluatorPtr(new carProjection(space.get()))
+    );
+    
+    // Create the start state
+    ompl::base::ScopedState<> start(space);
+    start[0] = 1.0; 
+    start[1] = 9.0; 
+    start[2] = 0.1; 
+    start[3] = 0.0; 
+    
+    // Create the goal state
+    ompl::base::ScopedState<> goal(space);
+    goal[0] = 9.0; 
+    goal[1] = 1.0;
+    goal[2] = 0.0; 
+    goal[3] = 0.0;
+
+    // Set the start and goal states
+    ss->setStartAndGoalStates(start, goal, 0.05);
+
+    return ss;
 }
 
 void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
