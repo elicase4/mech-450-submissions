@@ -219,7 +219,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
 
         // Output geometric solution path to file
         std::ofstream pathFile(geopathFilePath);
-        pathGeometric.print(pathFile);
+        pathGeometric.printAsMatrix(pathFile);
     }
     else
     {

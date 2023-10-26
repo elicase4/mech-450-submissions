@@ -158,8 +158,8 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
 
     // Set the bounds on the control space
     ompl::base::RealVectorBounds cbounds(2);
-    cbounds.setLow(-8.0);
-    cbounds.setHigh(8.0);
+    cbounds.setLow(-5.0);
+    cbounds.setHigh(5.0);
     cspace->setBounds(cbounds);
 
     // Assign the simple setup information to the simple setup pointer
@@ -255,8 +255,8 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
     // Setup any additional information for the problem 
     ss->setup();
 
-    // Solve the problem within 480s of planning time
-    ompl::base::PlannerStatus solved = ss->solve(480.0);
+    // Solve the problem within 300s of planning time
+    ompl::base::PlannerStatus solved = ss->solve(300.0);
     
     if (solved)
     {
@@ -266,7 +266,7 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
 
         // Output geometric solution path to file
         std::ofstream pathFile(geopathFilePath);
-        pathGeometric.print(pathFile);
+        pathGeometric.printAsMatrix(pathFile);
     }
     else
     {

@@ -6,44 +6,15 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.transforms import Affine2D
 import numpy
-import re
 import sys
 
 def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length, start_goal, control_bounds):
     
     if pendulum:
-        path_add1 = []
-        path_add2 = []
-        with open(path_file) as data:
-            for line in data:
-                if "RealVectorState" in line:
-                    cart_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    path_add1.append(cart_nums)
-                elif "SO2State" in line:
-                    rot_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    path_add2.append(rot_nums[-1])
-        path_arr = numpy.append(numpy.array(path_add1), numpy.array(path_add2).reshape(-1,1), axis=1)
+        path_arr = numpy.flip(numpy.loadtxt(path_file, usecols=range(2), dtype=numpy.float64), axis=1)
     
     elif car:
-        path_add1 = []
-        path_add2 = []
-        path_add3 = []
-        real_flag = False
-        with open(path_file) as data:
-            for line in data:
-                if "RealVectorState" in line:
-                    car_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    if real_flag == True:
-                       path_add3.append(car_nums)
-                       real_flag = False
-                    else: 
-                       path_add1.append(car_nums)
-                       real_flag = True
-                elif "SO2State" in line:
-                    rot_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    path_add2.append(rot_nums[-1])
-        path_arr = numpy.append(path_add1, numpy.array(path_add2).reshape(-1,1), axis=1)
-        path_arr = numpy.append(path_arr, numpy.array(path_add3).reshape(-1,1), axis=1)
+        path_arr = numpy.loadtxt(path_file, usecols=range(4), dtype=numpy.float64)
     
     else:
         raise ValueError("Need to specify pendulum or car.")
@@ -87,13 +58,13 @@ def gen_env_vis(env_arr, env_bounds, pendulum, car, file_num):
         plt.title('Pendulum Environment')
         plt.xlabel(f'$\\omega$')
         plt.ylabel(f'$\\theta$')
-        plt.savefig('figures/pendulum/env' + file_num + '.png')
+        plt.savefig('figures/pendulum/env.png')
     
     elif (car):
         plt.title('Car Environment')
         plt.xlabel(f'$x$')
         plt.ylabel(f'$y$')
-        plt.savefig('figures/car/env' + file_num + '.png')
+        plt.savefig('figures/car/env.png')
     
     else:
         raise ValueError("Need to specify pendulum or car.")
@@ -133,7 +104,7 @@ def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_
         plt.xlabel(f'$\\omega$')
         plt.ylabel(f'$\\theta$')
         plt.savefig('figures/pendulum/pathenv' + file_num + '.png')
-    
+  
     elif (car):
         plt.title('Car Solution with ' + planner)
         plt.xlabel(f'$x$')
@@ -154,7 +125,8 @@ def main(argv):
     parser.add_argument('--car-length', default=None, help='Specify the length of the car')
     parser.add_argument('-n', '--file-num', default=None, help='Specify the file numering for output naming conventions.', required=True)
     parser.add_argument('--start-goal', default=None, help='Option for specifying start and goal states.')
-    parser.add_argument('--viz-env-only', default=None, help='Option to visualize the environment only.')
+    parser.add_argument('-e', '--env', default=False, action='store_true', help='Option to visualize the environment only.')
+    parser.add_argument('-p', '--path', default=False, action='store_true', help='Option to visualize the environment and path only.')
     parser.add_argument('--planner', default=None, help='Specify the planner used.', required=True)
     parser.add_argument('--control-bounds', default=None, help='Specify the control bounds.', required=True)
 
@@ -164,11 +136,12 @@ def main(argv):
     path_arr, env_arr, env_bounds, start_goal, control_bounds = parse_log_files(args[0], args[1], args[2], options.pendulum, options.car, options.car_length, options.start_goal, options.control_bounds)
 
     # Generate the visualzation of environment only
-    if (options.viz_env_only):
-        gen_env_vis(env_arr, env_bounds, options.file_num)
+    if (options.env):
+        gen_env_vis(env_arr, env_bounds, options.pendulum, options.car, options.file_num)
 
     # Generate the visualzation of path and environment
-    gen_path_vis(path_arr, env_arr, env_bounds, start_goal, options.pendulum, options.car, options.file_num, options.planner, control_bounds, options.car_length)
+    if (options.path):
+        gen_path_vis(path_arr, env_arr, env_bounds, start_goal, options.pendulum, options.car, options.file_num, options.planner, control_bounds, options.car_length)
     
     return 0
 
