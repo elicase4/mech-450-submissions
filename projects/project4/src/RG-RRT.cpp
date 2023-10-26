@@ -13,6 +13,7 @@
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <limits>
 
+/*
 // Constructor
 ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : base::Planner(si, "RGRRT")
  {
@@ -69,13 +70,12 @@ ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : base::Planner(si, "
  }
 
 
-/* Generate Reachable Set Function
+Generate Reachable Set Function
 
 This function performs the generation of the reachable set for the planner. This is completely new and separate from 
 the rest of the code that is primarily just taken from the RRT file in the OMPL library. This function is called in 
 the solve function written below.
 
-*/
  void ompl::control::RGRRT::GRS(Motion* motion){
 
     // Create vector doubles (called LO and HI) that include the bounds, and find the range of the bounds
@@ -147,16 +147,16 @@ the solve function written below.
   
      while (ptc == false)
      {
-         /* sample random state (with goal biasing) */
+         // sample random state (with goal biasing)
          if (goal_s && rng_.uniform01() < goalBias_ && goal_s->canSample())
              goal_s->sampleGoal(rstate);
          else
              sampler_->sampleUniform(rstate);
   
-         /* find closest state in the tree */
+         // find closest state in the tree
          Motion *nmotion = nn_->nearest(rmotion);
   
-         /* sample a random control that attempts to go towards the random state, and also sample a control duration */
+         // sample a random control that attempts to go towards the random state, and also sample a control duration 
          unsigned int cd = controlSampler_->sampleTo(rctrl, nmotion->control, nmotion->state, rmotion->state);
   
          if (addIntermediateStates_)
@@ -172,7 +172,7 @@ the solve function written below.
                  size_t p = 0;
                  for (; p < pstates.size(); ++p)
                  {
-                     /* create a motion */
+                     // create a motion
                      auto *motion = new Motion();
                      motion->state = pstates[p];
                      // we need multiple copies of rctrl
@@ -214,7 +214,7 @@ the solve function written below.
          {
              if (cd >= siC_->getMinControlDuration())
              {
-                 /* create a motion */
+                 // create a motion 
                  auto *motion = new Motion(siC_);
                  si_->copyState(motion->state, rmotion->state);
                  siC_->copyControl(motion->control, rctrl);
@@ -253,7 +253,7 @@ the solve function written below.
      {
          lastGoalMotion_ = solution;
   
-         /* construct the solution path */
+         // construct the solution path
          std::vector<Motion *> mpath;
          while (solution != nullptr)
          {
@@ -261,7 +261,7 @@ the solve function written below.
              solution = solution->parent;
          }
   
-         /* set the solution path */
+         // set the solution path
          auto path(std::make_shared<PathControl>(si_));
          for (int i = mpath.size() - 1; i >= 0; --i)
              if (mpath[i]->parent)
@@ -312,4 +312,4 @@ the solve function written below.
      }
  }
 
-
+*/

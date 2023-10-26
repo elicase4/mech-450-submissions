@@ -45,17 +45,18 @@ public:
 
     unsigned int getDimension() const override
     {
-        // Set the dimension of the projection space to 2 for R^2
         return 2;
     }
 
     void project(const ompl::base::State* state, Eigen::Ref<Eigen::VectorXd> projection) const override
     {
-        const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-
+        auto compoundState = state->as<ompl::base::CompoundStateSpace::StateType>();
+        auto se2State = compoundState->as<ompl::base::SE2StateSpace::StateType>(0);
+        auto r2State = se2State->as<ompl::base::RealVectorStateSpace::StateType>(0);
+        
         // Project the robot's state into a 2D space
-        projection[0] = stateValues[0];  
-        projection[1] = stateValues[1];  
+        projection(0) = r2State->values[0];  
+        projection(1) = r2State->values[1];  
     }
 };
 
@@ -87,8 +88,8 @@ void makeStreet(std::vector<Rectangle>& obstacles)
 
     rec1.x = 0;
     rec1.y = 0;
-    rec1.width = 2;
-    rec1.height = 5;
+    rec1.width = 0.02;
+    rec1.height = 0.05;
 
     rec2.x = 4;
     rec2.y = 3;
@@ -101,21 +102,8 @@ void makeStreet(std::vector<Rectangle>& obstacles)
     rec3.height = 4;
 
     obstacles.push_back(rec1);
-    obstacles.push_back(rec2);
-    obstacles.push_back(rec3);
-}
-
-bool isValidStateCar(ompl::control::SpaceInformation* si, const ompl::base::State* state, const std::vector<Rectangle>& obstacles)
-{
-    // check for collisions
-    /*
-    const double* stateValues = state->as<ompl::base::RealVectorStateSpace::StateType>()->values;
-    double x = stateValues[0];
-    double y = stateValues[1];
-    double orientation = stateValues[2];f
-    */
-
-    return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles);
+    //obstacles.push_back(rec2);
+    //obstacles.push_back(rec3);
 }
 
 void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
@@ -124,16 +112,17 @@ void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control:
     SO2.enforceBounds(result->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
 }
 
-ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */)
+ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
 {
-    // TODO: Create and setup the car's state space, control space, validity checker, everything you need for planning.
-    //ss->getSpaceInformation()->setPropagationStepSize(0.05);
-
+    // Initialize the state spaces
+    auto se2Space(std::make_shared<ompl::base::SE2StateSpace>()); 
+    auto r1Space(std::make_shared<ompl::base::RealVectorStateSpace>(1)); 
+    
     // Set the bounds on the state space
     ompl::base::RealVectorBounds se2Bounds(2);
     se2Bounds.setLow(0.0);
     se2Bounds.setHigh(10.0);
-    se2Space->as<ompl::base::RealVectorStateSpace>()->setBounds(se2Bounds);
+    se2Space->setBounds(se2Bounds);
 
     ompl::base::RealVectorBounds r1Bounds(1);
     r1Bounds.setLow(-2.0);
@@ -142,7 +131,6 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */
 
     // Create compound state space
     ompl::base::StateSpacePtr space = se2Space + r1Space;
-
 
     // Create a control space
     auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 2)); 
@@ -156,11 +144,11 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */
     // Assign the simple setup information to the simple setup pointer
     auto ss(std::make_shared<ompl::control::SimpleSetup>(cspace));
     
-    // Set state validity checker the omega bounds of [-10, 10] since there are no environment obstacles
+    // Set state validity checker to include collision checking and bounds checking
     ompl::control::SpaceInformation* si = ss->getSpaceInformation().get();
     ss->setStateValidityChecker(
-            [obstacles, si](const ompl::base::State* state) { 
-                return isValidStateCar(si, state, obstacles); }
+            [obstacles, si] (const ompl::base::State* state) { 
+                return si->satisfiesBounds(state) && isValidStateSquare(state, 0.25, obstacles); }
     ); 
 
     // Initialze the ODE solver function to use as the state propagator
@@ -174,9 +162,9 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle> & /* obstacles */
     
     // Add the pendulum projection for KPIECE1
     space->registerDefaultProjection(
-         ompl::base::ProjectionEvaluatorPtr(new carProjection(space.get()))
+         ompl::base::ProjectionEvaluatorPtr(new CarProjection(space.get()))
     );
-    
+
     // Create the start state
     ompl::base::ScopedState<> start(space);
     start[0] = 1.0; 
@@ -213,7 +201,8 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RRT planner.";
         outputMessageFailure = "No solution path was found for the car using the RRT planner.";
-        filePath = "txt_output/carRRT.txt"; 
+        filePath = "txt_output/car/RRT.txt"; 
+
     }
     else if (choice == 2)
     {
@@ -223,7 +212,7 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the KPIECE1 planner.";
         outputMessageFailure = "No solution path was found for the car using the KPIECE1 planner.";
-        filePath = "txt_output/carKPIECE1.txt"; 
+        filePath = "txt_output/car/KPIECE1.txt"; 
     }
     else if (choice == 3)
     {
@@ -233,12 +222,12 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RG-RRT planner.";
         outputMessageFailure = "No solution path was found for the car using the RG-RRT planner.";
-        filePath = "txt_output/carRGRRT.txt"; 
+        filePath = "txt_output/car/RGRRT.txt"; 
     }
     
-    
     ss->setup();
-    ompl::base::PlannerStatus solved = ss->solve(300.0);
+
+    ompl::base::PlannerStatus solved = ss->solve(60.0);
     
     if (solved)
     {
