@@ -102,8 +102,8 @@ void makeStreet(std::vector<Rectangle>& obstacles)
     rec3.height = 2;
 
     obstacles.push_back(rec1);
-    //obstacles.push_back(rec2);
-    //obstacles.push_back(rec3);
+    obstacles.push_back(rec2);
+    obstacles.push_back(rec3);
 }
 
 void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
@@ -180,7 +180,7 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
     goal[3] = 0.0;
 
     // Set the start and goal states
-    ss->setStartAndGoalStates(start, goal, 0.05);
+    ss->setStartAndGoalStates(start, goal, 0.1);
 
     return ss;
 }
