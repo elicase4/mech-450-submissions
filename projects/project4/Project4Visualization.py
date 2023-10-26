@@ -4,6 +4,7 @@
 import argparse
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
+from matplotlib.transforms import Affine2D
 import numpy
 import re
 import sys
@@ -26,15 +27,23 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length,
     elif car:
         path_add1 = []
         path_add2 = []
+        path_add3 = []
+        real_flag = False
         with open(path_file) as data:
             for line in data:
                 if "RealVectorState" in line:
-                    cart_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
-                    path_add1.append(cart_nums)
+                    car_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
+                    if real_flag == True:
+                       path_add3.append(car_nums)
+                       real_flag = False
+                    else: 
+                       path_add1.append(car_nums)
+                       real_flag = True
                 elif "SO2State" in line:
                     rot_nums=[float(val) for val in re.findall(r"[-+]?(?:\d*\.*\d+)", line)]
                     path_add2.append(rot_nums[-1])
         path_arr = numpy.append(path_add1, numpy.array(path_add2).reshape(-1,1), axis=1)
+        path_arr = numpy.append(path_arr, numpy.array(path_add3).reshape(-1,1), axis=1)
     
     else:
         raise ValueError("Need to specify pendulum or car.")
@@ -75,9 +84,15 @@ def gen_env_vis(env_arr, env_bounds, pendulum, car, file_num):
     ax.set_ylim(env_bounds[2], env_bounds[3]) 
     
     if (pendulum):
+        plt.title('Pendulum Environment')
+        plt.xlabel(f'$\\omega$')
+        plt.ylabel(f'$\\theta$')
         plt.savefig('figures/pendulum/env' + file_num + '.png')
     
     elif (car):
+        plt.title('Car Environment')
+        plt.xlabel(f'$x$')
+        plt.ylabel(f'$y$')
         plt.savefig('figures/car/env' + file_num + '.png')
     
     else:
@@ -85,7 +100,7 @@ def gen_env_vis(env_arr, env_bounds, pendulum, car, file_num):
 
     return None
 
-def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_num, planner, control_bounds):
+def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_num, planner, control_bounds, car_length):
     # Visualize the environment
     fig, ax = plt.subplots()
 
@@ -93,6 +108,14 @@ def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_
         ax.add_patch(Rectangle((env_arr[i,0], env_arr[i,1]), env_arr[i,2], env_arr[i,3], edgecolor='steelblue', facecolor='grey', fill=True, lw=2))
     ax.set_xlim(env_bounds[0], env_bounds[1]) 
     ax.set_ylim(env_bounds[2], env_bounds[3])
+
+    # Plot the car orientation
+    if (car):
+        car_length = float(car_length)
+        print(path_arr)
+        for i in range(0, path_arr.shape[0], 5):
+            car_rect = plt.Rectangle((path_arr[i,0] - 0.5*car_length, path_arr[i,1] - 0.5*car_length), width=car_length, height=car_length, color="red", transform=Affine2D().rotate_deg_around(*(path_arr[i,0], path_arr[i,1]), (180/3.14159)*path_arr[i,2])+ax.transData)
+            ax.add_patch(car_rect)
 
     # Plot start point
     start_circle = plt.Circle((start_goal[0], start_goal[1]), start_goal[-1], fill=False, color='r')
@@ -113,6 +136,9 @@ def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_
         plt.savefig('figures/pendulum/pathenv' + file_num + '.png')
     
     elif (car):
+        plt.title('Car Solution with ' + planner)
+        plt.xlabel(f'$x$')
+        plt.ylabel(f'$y$')
         plt.savefig('figures/car/pathenv' + file_num + '.png')
     
     else:
@@ -143,7 +169,7 @@ def main(argv):
         gen_env_vis(env_arr, env_bounds, options.file_num)
 
     # Generate the visualzation of path and environment
-    gen_path_vis(path_arr, env_arr, env_bounds, start_goal, options.pendulum, options.car, options.file_num, options.planner, control_bounds)
+    gen_path_vis(path_arr, env_arr, env_bounds, start_goal, options.pendulum, options.car, options.file_num, options.planner, control_bounds, options.car_length)
     
     return 0
 

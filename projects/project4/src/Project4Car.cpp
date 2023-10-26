@@ -80,30 +80,44 @@ void carODE(const ompl::control::ODESolver::StateType& q, const ompl::control::C
         qdot[3] = velocity[1]; 
 }
 
-void makeStreet(std::vector<Rectangle>& obstacles)
+void makeStreet(std::vector<Rectangle>& obstacles, std::string envFilePath)
 {
+    // Initialize Rectangles
     Rectangle rec1;
     Rectangle rec2;
     Rectangle rec3;
 
+    // Build Rectangle 1
     rec1.x = 0;
     rec1.y = 2;
     rec1.width = 4;
     rec1.height = 6;
 
+    // Build Rectangle 2
     rec2.x = 6;
     rec2.y = 2;
     rec2.width = 4;
     rec2.height = 3;
 
+    // Build Rectangle 3
     rec3.x = 6;
     rec3.y = 7;
     rec3.width = 2;
     rec3.height = 2;
 
+    // Add obstacles to vector
     obstacles.push_back(rec1);
     obstacles.push_back(rec2);
     obstacles.push_back(rec3);
+
+    // Output obstacle coordinates to file
+    std::ofstream file(envFilePath);
+    for (Rectangle obst : obstacles)
+    {
+         file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+    }
+                                 
+    std::cout << "Car environment created using " << obstacles.size() << " total obstacles." << std::endl;
 }
 
 void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control::Control* /*control*/, const double /*duration*/, ompl::base::State* result)
@@ -112,7 +126,7 @@ void carPostIntegration(const ompl::base::State* /*state*/, const ompl::control:
     SO2.enforceBounds(result->as<ompl::base::CompoundState>()->as<ompl::base::SO2StateSpace::StateType>(0));
 }
 
-ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
+ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::string boundsFilePath, std::string startgoalFilePath)
 {
     // Initialize the state spaces
     auto se2Space(std::make_shared<ompl::base::SE2StateSpace>()); 
@@ -132,6 +146,10 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
     // Create compound state space
     ompl::base::StateSpacePtr space = se2Space + r1Space;
 
+    // Record the environment bounds to an output file
+    std::ofstream boundsFile(boundsFilePath);
+    boundsFile << se2Bounds.low[0] << "," << se2Bounds.high[0] << "," << se2Bounds.low[0] << "," << se2Bounds.high[0] << std::endl;
+    
     // Create a control space
     auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 2)); 
 
@@ -182,15 +200,18 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
     // Set the start and goal states
     ss->setStartAndGoalStates(start, goal, 0.1);
 
+    // Record the start and goal information to an output file
+    std::ofstream startgoalFile(startgoalFilePath);
+    startgoalFile << start[0] << "," << start[1] << "," << goal[0] << "," << goal[1] << "," << 0.1 << std::endl;
+    
     return ss;
 }
 
-void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
+void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathFilePath)
 {
     // Initialize string variables
     std::string outputMessageSuccess;
     std::string outputMessageFailure;
-    std::string filePath;
     
     // choice is what planner to use.
     if (choice == 1)
@@ -201,9 +222,8 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RRT planner.";
         outputMessageFailure = "No solution path was found for the car using the RRT planner.";
-        filePath = "txt_output/car/RRT.txt"; 
-
     }
+    
     else if (choice == 2)
     {
         //KPIECE1
@@ -212,8 +232,8 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the KPIECE1 planner.";
         outputMessageFailure = "No solution path was found for the car using the KPIECE1 planner.";
-        filePath = "txt_output/car/KPIECE1.txt"; 
     }
+    
     else if (choice == 3)
     {
         //RG-RRT
@@ -222,7 +242,6 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RG-RRT planner.";
         outputMessageFailure = "No solution path was found for the car using the RG-RRT planner.";
-        filePath = "txt_output/car/RGRRT.txt"; 
     }
     
     ss->setup();
@@ -236,8 +255,8 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice)
         std::cout << outputMessageSuccess << std::endl;
 
         // Output geometric solution path to file
-        std::ofstream file(filePath);
-        pathGeometric.print(file);
+        std::ofstream pathFile(geopathFilePath);
+        pathGeometric.print(pathFile);
     }
     else
     {
@@ -251,10 +270,24 @@ void benchmarkCar(ompl::control::SimpleSetupPtr &/* ss */)
     // TODO: Do some benchmarking for the car
 }
 
-int main(int /* argc */, char ** /* argv */)
+int main(int argc, char ** argv)
 {
+    // Terminate if the correct number of input arguments are not provided
+    if (argc != 5)
+    {
+        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [path file to environment output]" << std::endl;
+        exit(1);
+    }
+        
+    // Initialze input arguments for output text file names
+    std::string geopathFilePath(argv[1]);
+    std::string boundsFilePath(argv[2]);
+    std::string startgoalFilePath(argv[3]);
+    std::string envFilePath(argv[4]);
+    
+    // Make environment obstacles
     std::vector<Rectangle> obstacles;
-    makeStreet(obstacles);
+    makeStreet(obstacles, envFilePath);
 
     int choice;
     do
@@ -266,7 +299,7 @@ int main(int /* argc */, char ** /* argv */)
         std::cin >> choice;
     } while (choice < 1 || choice > 2);
 
-    ompl::control::SimpleSetupPtr ss = createCar(obstacles);
+    ompl::control::SimpleSetupPtr ss = createCar(obstacles, boundsFilePath, startgoalFilePath);
 
     // Planning
     if (choice == 1)
@@ -282,7 +315,7 @@ int main(int /* argc */, char ** /* argv */)
             std::cin >> planner;
         } while (planner < 1 || planner > 3);
 
-        planCar(ss, planner);
+        planCar(ss, planner, geopathFilePath);
     }
     // Benchmarking
     else if (choice == 2)
