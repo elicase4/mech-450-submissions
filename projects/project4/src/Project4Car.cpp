@@ -87,19 +87,19 @@ void makeStreet(std::vector<Rectangle>& obstacles)
     Rectangle rec3;
 
     rec1.x = 0;
-    rec1.y = 0;
-    rec1.width = 0.02;
-    rec1.height = 0.05;
+    rec1.y = 2;
+    rec1.width = 4;
+    rec1.height = 6;
 
-    rec2.x = 4;
-    rec2.y = 3;
-    rec2.width = 2;
-    rec2.height = 2;
+    rec2.x = 6;
+    rec2.y = 2;
+    rec2.width = 4;
+    rec2.height = 3;
 
-    rec3.x = 8;
-    rec3.y = 4;
-    rec3.width = 1;
-    rec3.height = 4;
+    rec3.x = 6;
+    rec3.y = 7;
+    rec3.width = 2;
+    rec3.height = 2;
 
     obstacles.push_back(rec1);
     //obstacles.push_back(rec2);
@@ -125,8 +125,8 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
     se2Space->setBounds(se2Bounds);
 
     ompl::base::RealVectorBounds r1Bounds(1);
-    r1Bounds.setLow(-2.0);
-    r1Bounds.setHigh(2.0);
+    r1Bounds.setLow(-10.0);
+    r1Bounds.setHigh(10.0);
     r1Space->as<ompl::base::RealVectorStateSpace>()->setBounds(r1Bounds);
 
     // Create compound state space
@@ -137,8 +137,8 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
 
     // Set the bounds on the control space
     ompl::base::RealVectorBounds cbounds(2);
-    cbounds.setLow(-1.0);
-    cbounds.setHigh(1.0);
+    cbounds.setLow(-5.0);
+    cbounds.setHigh(5.0);
     cspace->setBounds(cbounds);
 
     // Assign the simple setup information to the simple setup pointer
@@ -169,7 +169,7 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles)
     ompl::base::ScopedState<> start(space);
     start[0] = 1.0; 
     start[1] = 9.0; 
-    start[2] = 0.1; 
+    start[2] = 0.0; 
     start[3] = 0.0; 
     
     // Create the goal state
