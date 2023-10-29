@@ -23,6 +23,9 @@
 #include <ompl/control/planners/rrt/RRT.h>
 #include <ompl/control/planners/kpiece/KPIECE1.h>
 
+// Include the Benchmark tools
+#include <ompl/tools/benchmark/Benchmark.h>
+
 // Header for path and env output
 #include <fstream>
 
@@ -194,7 +197,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
         case 3:
         {
             // Instantiate the RG-RRT Planner
-            // ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+            ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
 
             // Set custom output messages and file names
             outputMessageSuccess = "Solution Path was found for the pendulum using the RG-RRT planner.";
@@ -227,9 +230,35 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
     }
 }
 
-void benchmarkPendulum(ompl::control::SimpleSetupPtr &/* ss */)
+void benchmarkPendulum(ompl::control::SimpleSetupPtr& ss)
 {
-    // TODO: Do some benchmarking for the pendulum
+    // Declare the number of times to run the planner
+    int run_count = 25;
+
+    // Declare the run time and memory limits
+    double runtime_lim = 200.0;
+    double memory_lim = 50000.0;
+
+    // Setup the planner
+    ss->setup();
+
+    // Print the setup options
+    ss->print(std::cout);
+
+    // Request the benchmark
+    ompl::tools::Benchmark::Request request(runtime_lim, memory_lim, run_count);
+    ompl::tools::Benchmark bench(*ss, "Pendulum");
+
+    // Add the desired planners to the benchmark
+    bench.addPlanner(std::make_shared<ompl::control::RRT>(ss->getSpaceInformation()));
+    bench.addPlanner(std::make_shared<ompl::control::KPIECE1>(ss->getSpaceInformation()));
+    bench.addPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+
+    // Run the benchmark
+    bench.benchmark(request);
+
+    // Save the benchmark results to a file
+    bench.saveResultsToFile();
 }
 
 int main(int argc, char** argv)
@@ -237,7 +266,7 @@ int main(int argc, char** argv)
     // Terminate if the correct number of input arguments are not provided
     if (argc != 4)
     {
-        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output]" << std::endl;
+        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output]" << std::endl;
         exit(1);
     }
 

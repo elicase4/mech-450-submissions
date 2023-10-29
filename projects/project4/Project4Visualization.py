@@ -40,7 +40,10 @@ def parse_log_files(path_file, env_file, bounds_file, pendulum, car, car_length,
             bounds_add.extend(bounds_nums)
     env_bounds = numpy.array(bounds_add, dtype=numpy.float64)
 
-    control_bounds_nums = [float(val) for val in control_bounds.strip().split()]
+    if (control_bounds):
+      control_bounds_nums = [float(val) for val in control_bounds.strip().split()]
+    else:
+      control_bounds_nums = None
 
     return path_arr, env_arr, env_bounds, start_goal_nums, control_bounds_nums
     
@@ -128,7 +131,7 @@ def main(argv):
     parser.add_argument('-e', '--env', default=False, action='store_true', help='Option to visualize the environment only.')
     parser.add_argument('-p', '--path', default=False, action='store_true', help='Option to visualize the environment and path only.')
     parser.add_argument('--planner', default=None, help='Specify the planner used.', required=True)
-    parser.add_argument('--control-bounds', default=None, help='Specify the control bounds.', required=True)
+    parser.add_argument('--control-bounds', default=None, help='Specify the control bounds.')
 
     (options, args) = parser.parse_known_args()
 

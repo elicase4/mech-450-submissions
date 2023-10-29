@@ -245,7 +245,7 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
     else if (choice == 3)
     {
         //RG-RRT
-        // ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
+        ss->setPlanner(std::make_shared<ompl::control::RGRRT>(ss->getSpaceInformation()));
         
         // Set custom output messages and file names
         outputMessageSuccess = "Solution Path was found for the car using the RG-RRT planner.";
@@ -275,9 +275,9 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
 
 }
 
-void benchmarkCar(ompl::control::SimpleSetupPtr &/* ss */)
+void benchmarkCar(ompl::control::SimpleSetupPtr& ss)
 {
-    // TODO: Do some benchmarking for the car
+   
 }
 
 int main(int argc, char ** argv)
@@ -285,7 +285,7 @@ int main(int argc, char ** argv)
     // Terminate if the correct number of input arguments are not provided
     if (argc != 5)
     {
-        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [path file to environment output]" << std::endl;
+        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [file path to environment output]" << std::endl;
         exit(1);
     }
         
