@@ -97,8 +97,11 @@ ompl::control::SimpleSetupPtr createPendulum(double torque, std::string boundsFi
     ompl::base::StateSpacePtr space = thetaSpace + omegaSpace;
 
     // Record the environment bounds to an output file
-    std::ofstream boundsFile(boundsFilePath);
-    boundsFile << omegaBounds.low[0] << "," << omegaBounds.high[0] << "," << 0.5*omegaBounds.low[0] << "," << 0.5*omegaBounds.high[0] << std::endl;
+    if (!boundsFilePath.empty())
+    {
+        std::ofstream boundsFile(boundsFilePath);
+        boundsFile << omegaBounds.low[0] << "," << omegaBounds.high[0] << "," << 0.5*omegaBounds.low[0] << "," << 0.5*omegaBounds.high[0] << std::endl;
+    }
 
     // Output the amunt of environment obstacles
     std::cout << "Pendulum environment created using " << 0 << " total obstacles."<< std::endl;
@@ -149,9 +152,12 @@ ompl::control::SimpleSetupPtr createPendulum(double torque, std::string boundsFi
     ss->setStartAndGoalStates(start, goal, 0.05);
     
     // Record the start and goal information to an output file
-    std::ofstream startgoalFile(startgoalFilePath);
-    startgoalFile << start[1] << "," << start[0] << "," << goal[1] << "," << goal[0] << "," << 0.05 << std::endl;
-
+    if (!startgoalFilePath.empty())
+    {
+        std::ofstream startgoalFile(startgoalFilePath);
+        startgoalFile << start[1] << "," << start[0] << "," << goal[1] << "," << goal[0] << "," << 0.05 << std::endl;
+    }
+        
     return ss;
 }
 
@@ -221,8 +227,11 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
         std::cout << outputMessageSuccess << std::endl;
 
         // Output geometric solution path to file
-        std::ofstream pathFile(geopathFilePath);
-        pathGeometric.printAsMatrix(pathFile);
+        if (!geopathFilePath.empty())
+        {
+            std::ofstream pathFile(geopathFilePath);
+            pathGeometric.printAsMatrix(pathFile);
+        }
     }
     else
     {
@@ -263,18 +272,24 @@ void benchmarkPendulum(ompl::control::SimpleSetupPtr& ss)
 
 int main(int argc, char** argv)
 {
+    // Initialize input arguments
+    std::string geopathFilePath;
+    std::string boundsFilePath;
+    std::string startgoalFilePath;
+    
     // Terminate if the correct number of input arguments are not provided
-    if (argc != 4)
+    if (argc == 4)
     {
-        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output]" << std::endl;
-        exit(1);
+        // Initialze input arguments for output text file names
+        geopathFilePath = argv[1];
+        boundsFilePath = argv[2];
+        startgoalFilePath = argv[3];
+    }
+    else
+    {
+        std::cout << "To save the output, please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output]" << "\n" << std::endl;
     }
 
-    // Initialze input arguments for output text file names
-    std::string geopathFilePath(argv[1]);
-    std::string boundsFilePath(argv[2]);
-    std::string startgoalFilePath(argv[3]);
-    
     int choice;
     do
     {
