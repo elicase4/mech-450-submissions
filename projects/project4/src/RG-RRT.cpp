@@ -13,9 +13,8 @@
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <limits>
 
-/*
 // Constructor
-ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : base::Planner(si, "RGRRT")
+ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner(si, "RGRRT")
  {
      specs_.approximateSolutions = true;
      siC_ = si.get();
@@ -311,5 +310,3 @@ the solve function written below.
              data.addStartVertex(base::PlannerDataVertex(m->state));
      }
  }
-
-*/

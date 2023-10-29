@@ -18,27 +18,26 @@ Change log:
 #ifndef RGRRT_H
 #define RGRRT_H
 
+// Include the base planner class
+#include <ompl/control/planners/PlannerIncludes.h>
+
 // Include the nearest neighbors code 
-#include "ompl/datastructures/NearestNeighbors.h"
+#include <ompl/datastructures/NearestNeighbors.h>
 
 namespace ompl
 {
     namespace control
     {
-        // TODO: Implement RGRRT as described
-       
-        /*
-
-        class RGRRT : public base::Planner
+        class RGRRT : public ompl::base::Planner
         {
 
         public:
             // Basic constructor and destructor overrides
-            RGRRT(const SpaceInformationPtr &si);
+            RGRRT(const ompl::base::SpaceInformationPtr &si);
             ~RGRRT() override;
 
             // Define the main "solve" function with the termination condition being the time spent.
-            base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc) override;
+            ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc) override;
 
             // Define the clear function
             void clear() override;
@@ -55,16 +54,12 @@ namespace ompl
                 return goalBias_;
             }
 
-            */
-
             /*
             Because we're using intermediate states and nearest neighbors for this project (vs project 3, where we 
             removed all instances of intermediate states), this is the first point that truly differs from the last project.
             The bulk of this code just comes straight from the OMPL RRT code on the website and Github.
             */
             
-            /*
-
             // Get any added intermediate states that are to be added to the tree itself.
             bool getIntermediateStates() const
             {
@@ -78,7 +73,7 @@ namespace ompl
             }
 
             // Grab planner data
-            void getPlannerData(base::PlannerData &data) const override;
+            void getPlannerData(ompl::base::PlannerData &data) const override;
 
             // Set nearest neighbors datastructure
             template <template <typename T> class NN>
@@ -90,7 +85,7 @@ namespace ompl
                 clear();
 
                 // Create new datastructure and set it up.
-                nn_ = std::make_shared<NN<Motion *>>();
+                nn_ = std::make_shared<NN<Motion*>>();
                 setup();
             }
 
@@ -117,16 +112,16 @@ namespace ompl
                     ~Motion() = default;
 
                     // Create the state contained in the motion
-                    base::State *state{nullptr};
+                    ompl::base::State* state{nullptr};
 
                     // Create the control contained in the motion
-                    Control *control{nullptr};
+                    Control* control{nullptr};
 
                     // Create the number of steps this control will be applied for
                     unsigned int steps{0};
 
                     // Create the parent motion in the exploration tree
-                    Motion *parent{nullptr};
+                    Motion* parent{nullptr};
 
                     // Create the reachable set (this is what separates RGRRT from the "normal" RRT!!)
                     std::vector<Motion*> ReachS;
@@ -137,21 +132,21 @@ namespace ompl
 
             // Compute distances between motions 
 
-            double distanceFunction(const Motion *a, const Motion *b) const
+            double distanceFunction(const Motion* a, const Motion* b) const
             {
                 return si_->distance(a->state,b->state);
             }
 
             // State sampler
-            base::StateSamplerPtr sampler_;
+            ompl::base::StateSamplerPtr sampler_;
 
             // Control sampler
             DirectedControlSamplerPtr controlSampler_;
 
-            const SpaceInformation *siC_;
+            const SpaceInformation* siC_;
 
             // A nearest-neighbors datastructure containing the tree of motions 
-            std::shared_ptr<NearestNeighbors<Motion *>> nn_;
+            std::shared_ptr<NearestNeighbors<Motion*>> nn_;
 
             // set the goal bias
             double goalBias_{0.05};
@@ -160,7 +155,7 @@ namespace ompl
             bool addIntermediateStates_{false};
 
             // Find the latest goal motion.
-            Motion *lastGoalMotion_{nullptr};
+            Motion* lastGoalMotion_{nullptr};
 
             // Generate the reachable set (NEW)
             void GRS(Motion* motion);
@@ -169,8 +164,6 @@ namespace ompl
             int selectReachableMotion(const Motion* near, const Motion* rand);
         };
          
-        */
- 
     }  // namespace control 
 }  // namespace ompl
 
