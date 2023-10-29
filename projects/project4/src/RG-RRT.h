@@ -33,7 +33,7 @@ namespace ompl
 
         public:
             // Basic constructor and destructor overrides
-            RGRRT(const ompl::base::SpaceInformationPtr &si);
+            RGRRT(const SpaceInformationPtr &si);
             ~RGRRT() override;
 
             // Define the main "solve" function with the termination condition being the time spent.
@@ -156,6 +156,9 @@ namespace ompl
 
             // Find the latest goal motion.
             Motion* lastGoalMotion_{nullptr};
+
+            // Random number generator
+            RNG rng_;
 
             // Generate the reachable set (NEW)
             void GRS(Motion* motion);
