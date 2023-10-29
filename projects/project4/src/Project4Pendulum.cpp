@@ -277,10 +277,9 @@ int main(int argc, char** argv)
     std::string boundsFilePath;
     std::string startgoalFilePath;
     
-    // Terminate if the correct number of input arguments are not provided
+    // Parse Input Arguments
     if (argc == 4)
     {
-        // Initialze input arguments for output text file names
         geopathFilePath = argv[1];
         boundsFilePath = argv[2];
         startgoalFilePath = argv[3];

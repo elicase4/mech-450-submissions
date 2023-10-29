@@ -117,10 +117,13 @@ void makeStreet(std::vector<Rectangle>& obstacles, std::string envFilePath)
     obstacles.push_back(rec3);
 
     // Output obstacle coordinates to file
-    std::ofstream file(envFilePath);
-    for (Rectangle obst : obstacles)
+    if (!envFilePath.empty())
     {
-         file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+        std::ofstream file(envFilePath);
+        for (auto obst : obstacles)
+        {
+             file << obst.x << "," << obst.y << "," << obst.width << "," << obst.height << std::endl;
+        }
     }
                                  
     std::cout << "Car environment created using " << obstacles.size() << " total obstacles." << std::endl;
@@ -153,9 +156,12 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
     ompl::base::StateSpacePtr space = se2Space + r1Space;
 
     // Record the environment bounds to an output file
-    std::ofstream boundsFile(boundsFilePath);
-    boundsFile << se2Bounds.low[0] << "," << se2Bounds.high[0] << "," << se2Bounds.low[0] << "," << se2Bounds.high[0] << std::endl;
-    
+    if (!boundsFilePath.empty())
+    {
+        std::ofstream boundsFile(boundsFilePath);
+        boundsFile << se2Bounds.low[0] << "," << se2Bounds.high[0] << "," << se2Bounds.low[0] << "," << se2Bounds.high[0] << std::endl;
+    }
+
     // Create a control space
     auto cspace(std::make_shared<ompl::control::RealVectorControlSpace>(space, 2)); 
 
@@ -212,8 +218,11 @@ ompl::control::SimpleSetupPtr createCar(std::vector<Rectangle>& obstacles, std::
     ss->setStartAndGoalStates(start, goal, 0.15);
 
     // Record the start and goal information to an output file
-    std::ofstream startgoalFile(startgoalFilePath);
-    startgoalFile << start[0] << "," << start[1] << "," << goal[0] << "," << goal[1] << "," << 0.15 << std::endl;
+    if (!startgoalFilePath.empty())
+    {
+        std::ofstream startgoalFile(startgoalFilePath);
+        startgoalFile << start[0] << "," << start[1] << "," << goal[0] << "," << goal[1] << "," << 0.15 << std::endl;
+    }
     
     return ss;
 }
@@ -268,8 +277,11 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
         std::cout << outputMessageSuccess << std::endl;
 
         // Output geometric solution path to file
-        std::ofstream pathFile(geopathFilePath);
-        pathGeometric.printAsMatrix(pathFile);
+        if (!geopathFilePath.empty())
+        {
+            std::ofstream pathFile(geopathFilePath);
+            pathGeometric.printAsMatrix(pathFile);
+        }
     }
     else
     {
@@ -311,18 +323,24 @@ void benchmarkCar(ompl::control::SimpleSetupPtr& ss)
 
 int main(int argc, char ** argv)
 {
-    // Terminate if the correct number of input arguments are not provided
-    if (argc != 5)
+    // Initialize input arguments
+    std::string geopathFilePath;
+    std::string boundsFilePath;
+    std::string startgoalFilePath;
+    std::string envFilePath;
+    
+    // Parse input arguments
+    if (argc == 5)
     {
-        std::cout << "Please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [file path to environment output]" << std::endl;
-        exit(1);
+        geopathFilePath = argv[1];
+        boundsFilePath = argv[2];
+        startgoalFilePath = argv[3];
+        envFilePath = argv[4];
     }
-        
-    // Initialze input arguments for output text file names
-    std::string geopathFilePath(argv[1]);
-    std::string boundsFilePath(argv[2]);
-    std::string startgoalFilePath(argv[3]);
-    std::string envFilePath(argv[4]);
+    else
+    {
+        std::cout << "To save the output, please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [file path to environment output]" << "\n" << std::endl;
+    }
     
     // Make environment obstacles
     std::vector<Rectangle> obstacles;
