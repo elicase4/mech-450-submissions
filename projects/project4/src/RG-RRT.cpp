@@ -8,10 +8,10 @@
 #include "RG-RRT.h"
 
 // Additional OMPL and C++ libraries for implementation
-#include <ompl/tools/config/SelfConfig.h>
+#include "ompl/tools/config/SelfConfig.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
-#include <ompl/base/goals/GoalSampleableRegion.h>
-#include <ompl/control/spaces/RealVectorControlSpace.h>
+#include "ompl/base/goals/GoalSampleableRegion.h"
+#include "ompl/control/spaces/RealVectorControlSpace.h"
 #include <limits>
 
 // Constructor
@@ -21,7 +21,8 @@ ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner
      siC_ = si.get();
   
      Planner::declareParam<double>("goal_bias", this, &RGRRT::setGoalBias, &RGRRT::getGoalBias, "0.:.05:1.");
-     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates, "0,1");
+     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates,
+                                "0,1");
 
 }
 
@@ -53,8 +54,7 @@ void ompl::control::RGRRT::clear()
 
  
 // Free memory function 
-void ompl::control::RGRRT::freeMemory()
-{
+void ompl::control::RGRRT::freeMemory(){
     if (nn_)
     {
         std::vector<Motion *> motions;
@@ -77,11 +77,10 @@ This function performs the generation of the reachable set for the planner. This
 the rest of the code that is primarily just taken from the RRT file in the OMPL library. This function is called in 
 the solve function written below.
 */
-
-void ompl::control::RGRRT::GRS(Motion* const motion){
+void ompl::control::RGRRT::GRS(Motion* motion) {
 
     // Create vector of doubles (called LO and HI) that include the bounds, and find the range of the bounds
-    base::RealVectorBounds bounds = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds();
+    auto bounds = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds();
     double LO = bounds.low[0];
     double HI = bounds.high[0];
 
@@ -91,23 +90,21 @@ void ompl::control::RGRRT::GRS(Motion* const motion){
     for (double propagation = LO; propagation <= HI; propagation += range/10.0)
     {
         Motion *newmotion = new Motion(siC_);
+
         siC_->copyControl(newmotion->control, motion->control);
 
-        // Set the desired control values and set the first value of that array to the propagation in the loop.
-        double *options = motion->control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;
-
-        options[0] = propagation;
-        options[1] = 0.0;
-
-        ompl::base::State *newState = siC_->allocState();
+        double *casting = motion->control->as<RealVectorControlSpace::ControlType>()->values;
+        casting[0] = propagation;
 
         // Perform the propagation
-        siC_->propagateWhileValid(motion->state, newmotion->control, 1, newState);
+        newmotion->steps = siC_->propagateWhileValid(motion->state, newmotion->control, 1, newmotion->state);
 
         // Add the propagation to the reachable motions
         motion->ReachS.push_back(newmotion);
     }
 }
+
+
 
 /* Select Reachable Motion Function
 
@@ -122,18 +119,13 @@ int ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const 
     const base::State *nearState = nearmotion->state;
     const base::State *randState = randmotion->state;
 
-    if (!nearState || !randState) {
-        // Handle the case where states are uninitialized
-        return -1;
-    }
-
     const double nearDistance = si_->distance(nearState, randState);
     double minimumDistance = nearDistance;
 
     const auto& reach = nearmotion->ReachS;
     int id = -1;
 
-    for(int i = 0; i < reach.size(); ++i)
+    for(size_t i = 0; i < reach.size(); ++i)
     {
         double newDistance = si_->distance(reach[i]->state, randmotion->state);
 
@@ -186,7 +178,6 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
     auto *rmotion = new Motion(siC_);
     base::State *rstate = rmotion->state;
     Control *rctrl = rmotion->control;
-    base::State *xstate = si_->allocState();
   
     while(ptc == false)
     {
@@ -341,7 +332,6 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
     if (rmotion->control)
         siC_->freeControl(rmotion->control);
     delete rmotion;
-    si_->freeState(xstate);
   
     OMPL_INFORM("%s: Created %u states", getName().c_str(), nn_->size());
   

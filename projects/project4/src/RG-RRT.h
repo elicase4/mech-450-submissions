@@ -161,10 +161,10 @@ namespace ompl
             RNG rng_;
 
             // Generate the reachable set (NEW)
-            void GRS(Motion* const motion);
+            void GRS(Motion* const m);
 
             // Select a reachable motion (NEW)
-            int selectReachableMotion(const Motion* nearmotion, const Motion* randmotion);
+            int selectReachableMotion(const Motion* near, const Motion* rand);
         };
          
     }  // namespace control 
