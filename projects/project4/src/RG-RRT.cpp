@@ -7,7 +7,9 @@
 // Our .h file
 #include "RG-RRT.h"
 
+// Additional OMPL and C++ libraries for implementation
 #include <ompl/tools/config/SelfConfig.h>
+#include "ompl/base/spaces/SE2StateSpace.h"
 #include <ompl/base/goals/GoalSampleableRegion.h>
 #include <ompl/control/spaces/RealVectorControlSpace.h>
 #include <limits>
@@ -19,7 +21,8 @@ ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner
      siC_ = si.get();
   
      Planner::declareParam<double>("goal_bias", this, &RGRRT::setGoalBias, &RGRRT::getGoalBias, "0.:.05:1.");
-     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates);
+     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates, "0,1");
+
 }
 
 // Destructor 
@@ -68,23 +71,24 @@ void ompl::control::RGRRT::freeMemory()
 }
 
 /*
-Generate Reachable Set Function
+Generate Reachable Set (GRS) Function
 
 This function performs the generation of the reachable set for the planner. This is completely new and separate from 
 the rest of the code that is primarily just taken from the RRT file in the OMPL library. This function is called in 
 the solve function written below.
 */
 
-void ompl::control::RGRRT::GRS(Motion* motion){
+void ompl::control::RGRRT::GRS(Motion* const motion){
 
     // Create vector of doubles (called LO and HI) that include the bounds, and find the range of the bounds
-    const std::vector<double>& LO = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds().low;
-    const std::vector<double>& HI = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds().high;
+    base::RealVectorBounds bounds = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds();
+    double LO = bounds.low[0];
+    double HI = bounds.high[0];
 
-    double range = HI[0] - LO[0];
+    double range = HI - LO;
 
     // Propagate the input states for a range between -10 and 10 over a for loop. 
-    for (double propagation = LO[0]; propagation <= HI[0]; propagation += range/10.0)
+    for (double propagation = LO; propagation <= HI; propagation += range/10.0)
     {
         Motion *newmotion = new Motion(siC_);
         siC_->copyControl(newmotion->control, motion->control);
@@ -93,13 +97,53 @@ void ompl::control::RGRRT::GRS(Motion* motion){
         double *options = motion->control->as<ompl::control::RealVectorControlSpace::ControlType>()->values;
 
         options[0] = propagation;
+        options[1] = 0.0;
 
-        // Apply the control to the motion. This uses the propagateWhileValid function from the SpaceInformation file in OMPL.
-        motion->steps = siC_->propagateWhileValid(motion->state, newmotion->control, 1, newmotion->state);
+        ompl::base::State *newState = siC_->allocState();
+
+        // Perform the propagation
+        siC_->propagateWhileValid(motion->state, newmotion->control, 1, newState);
 
         // Add the propagation to the reachable motions
         motion->ReachS.push_back(newmotion);
     }
+}
+
+/* Select Reachable Motion Function
+
+This function is also new and separate from the rest of the code that is primarily just taken from the RRT file in the OMPL library.
+This function selects a reachable motion from the reachable set generated in the GRS function. This function is called in the solve.
+
+*/
+
+int ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const Motion* randmotion)
+{
+
+    const base::State *nearState = nearmotion->state;
+    const base::State *randState = randmotion->state;
+
+    if (!nearState || !randState) {
+        // Handle the case where states are uninitialized
+        return -1;
+    }
+
+    const double nearDistance = si_->distance(nearState, randState);
+    double minimumDistance = nearDistance;
+
+    const auto& reach = nearmotion->ReachS;
+    int id = -1;
+
+    for(int i = 0; i < reach.size(); ++i)
+    {
+        double newDistance = si_->distance(reach[i]->state, randmotion->state);
+
+        if(newDistance < minimumDistance)
+        {
+            minimumDistance = newDistance;
+            id = i;
+        }
+    }
+    return id;
 }
 
 // Main solve function
@@ -144,23 +188,44 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
     Control *rctrl = rmotion->control;
     base::State *xstate = si_->allocState();
   
-    while (ptc == false)
+    while(ptc == false)
     {
+
         // sample random state (with goal biasing)
         if (goal_s && rng_.uniform01() < goalBias_ && goal_s->canSample())
-            goal_s->sampleGoal(rstate);
+             goal_s->sampleGoal(rstate);
         else
             sampler_->sampleUniform(rstate);
-  
+        
         // find closest state in the tree
         Motion *nmotion = nn_->nearest(rmotion);
-  
+
+
+        // if rmotion (rand) is too far from nmotion (near), select a motion from nmotion's reachable set that brings us closer to rmotion
+        while(selectReachableMotion(nmotion, rmotion))
+        {
+            int id = selectReachableMotion(nmotion, rmotion);
+
+            // get the motion determined by its id
+            Motion* newmotion = nmotion->ReachS[id];
+
+            // generate a new motion
+            auto *motion = new Motion(siC_);
+            si_->copyState(motion->state, newmotion->state);
+            siC_->copyControl(motion->control, newmotion->control);
+            motion->parent = nmotion;
+            motion->steps = 1;
+
+            nn_->add(motion);
+
+            nmotion = motion;
+
+        }
         // sample a random control that attempts to go towards the random state, and also sample a control duration 
         unsigned int cd = controlSampler_->sampleTo(rctrl, nmotion->control, nmotion->state, rmotion->state);
   
         if (addIntermediateStates_)
         {
-            // this code is contributed by Jennifer Barry
             std::vector<base::State *> pstates;
             cd = siC_->propagateWhileValid(nmotion->state, rctrl, cd, pstates, true);
   

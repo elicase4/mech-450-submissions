@@ -28,7 +28,7 @@ namespace ompl
 {
     namespace control
     {
-        class RGRRT : public ompl::base::Planner
+        class RGRRT : public base::Planner
         {
 
         public:
@@ -37,7 +37,7 @@ namespace ompl
             ~RGRRT() override;
 
             // Define the main "solve" function with the termination condition being the time spent.
-            ompl::base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc) override;
+            base::PlannerStatus solve(const ompl::base::PlannerTerminationCondition &ptc) override;
 
             // Define the clear function
             void clear() override;
@@ -73,7 +73,7 @@ namespace ompl
             }
 
             // Grab planner data
-            void getPlannerData(ompl::base::PlannerData &data) const override;
+            void getPlannerData(base::PlannerData &data) const override;
 
             // Set nearest neighbors datastructure
             template <template <typename T> class NN>
@@ -112,7 +112,7 @@ namespace ompl
                     ~Motion() = default;
 
                     // Create the state contained in the motion
-                    ompl::base::State* state{nullptr};
+                    base::State *state{nullptr};
 
                     // Create the control contained in the motion
                     Control* control{nullptr};
@@ -121,10 +121,10 @@ namespace ompl
                     unsigned int steps{0};
 
                     // Create the parent motion in the exploration tree
-                    Motion* parent{nullptr};
+                    Motion *parent{nullptr};
 
                     // Create the reachable set (this is what separates RGRRT from the "normal" RRT!!)
-                    std::vector<Motion*> ReachS;
+                    std::vector<Motion *> ReachS;
             };
 
             // Free the planner's memory after
@@ -132,13 +132,13 @@ namespace ompl
 
             // Compute distances between motions 
 
-            double distanceFunction(const Motion* a, const Motion* b) const
+            double distanceFunction(const Motion *a, const Motion *b) const
             {
                 return si_->distance(a->state,b->state);
             }
 
             // State sampler
-            ompl::base::StateSamplerPtr sampler_;
+            base::StateSamplerPtr sampler_;
 
             // Control sampler
             DirectedControlSamplerPtr controlSampler_;
@@ -146,7 +146,7 @@ namespace ompl
             const SpaceInformation* siC_;
 
             // A nearest-neighbors datastructure containing the tree of motions 
-            std::shared_ptr<NearestNeighbors<Motion*>> nn_;
+            std::shared_ptr<NearestNeighbors<Motion *>> nn_;
 
             // set the goal bias
             double goalBias_{0.05};
@@ -161,10 +161,10 @@ namespace ompl
             RNG rng_;
 
             // Generate the reachable set (NEW)
-            void GRS(Motion* motion);
+            void GRS(Motion* const motion);
 
             // Select a reachable motion (NEW)
-            int selectReachableMotion(const Motion* near, const Motion* rand);
+            int selectReachableMotion(const Motion* nearmotion, const Motion* randmotion);
         };
          
     }  // namespace control 
