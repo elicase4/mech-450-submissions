@@ -1,0 +1,26 @@
+Info:    Beginning benchmark
+Info:    Preparing for run 0 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    RRT: Created 645564 states
+Info:    Preparing for run 1 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    ProblemDefinition: Adding approximate solution from planner RRT
+Info:    RRT: Created 663262 states
+Info:    Preparing for run 2 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    RRT: Created 427601 states
+Info:    Preparing for run 3 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    RRT: Created 11887 states
+Info:    Preparing for run 4 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    RRT: Created 3679 states
+Info:    Preparing for run 5 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    ProblemDefinition: Adding approximate solution from planner RRT
+Info:    RRT: Created 754626 states
+Info:    Preparing for run 6 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure
+Info:    RRT: Created 178467 states
+Info:    Preparing for run 7 of control_RRT
+Info:    RRT: Starting planning with 1 states already in datastructure

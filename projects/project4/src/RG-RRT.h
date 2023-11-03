@@ -124,7 +124,7 @@ namespace ompl
                     Motion *parent{nullptr};
 
                     // Create the reachable set (this is what separates RGRRT from the "normal" RRT!!)
-                    std::vector<Motion *> RS;
+                    std::vector<base::State*> RS;
             };
 
             // Free the planner's memory after

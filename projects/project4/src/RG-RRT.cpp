@@ -13,7 +13,7 @@
 #include "ompl/base/goals/GoalSampleableRegion.h"
 #include "ompl/control/spaces/RealVectorControlSpace.h"
 #include <limits>
-#include <iostream>
+#include <iostream> // for debugging
 
 // Constructor
 ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner(si, "RGRRT")
@@ -77,7 +77,7 @@ Generate Reachable Set (GRS) Function
 This function performs the generation of the reachable set for the planner. This is new funcitonality added to the planner.
 */
 
-void ompl::control::RGRRT::generateReachableSet(Motion* motion) 
+void ompl::control::RGRRT::generateReachableSet(Motion* const motion) 
 {
 
         // Create vector of doubles (called LO and HI) that include the bounds, and find the range of the bounds
@@ -88,20 +88,24 @@ void ompl::control::RGRRT::generateReachableSet(Motion* motion)
         double range = HI - LO;
         
         // Propagate the input states for a range between -10 and 10 over a for loop. 
-        for (double propagation = LO; propagation <= HI; propagation += range/20.0)
+        for (size_t iter = 0; iter < 11; ++iter)
         {
-            Motion *newmotion = new Motion(siC_);
+
+            // create a new control and assign the control value to the first element
+            Control *newcontrol = siC_->allocControl();
         
-            siC_->copyControl(newmotion->control, motion->control);
- 
-            double *casting = motion->control->as<RealVectorControlSpace::ControlType>()->values;
-            casting[0] = propagation;
+            newcontrol->as<RealVectorControlSpace::ControlType>()->values[0] = LO;
+            newcontrol->as<RealVectorControlSpace::ControlType>()->values[1] = 0.0; // sort of a placeholder
+            
+            ompl::base::State *newState = siC_->allocState();
 
             // Perform the propagation
-            newmotion->steps = siC_->propagateWhileValid(motion->state, newmotion->control, 1, newmotion->state);
+            siC_->propagateWhileValid(motion->state, newcontrol, 1, newState);
 
             // Add the propagation to the reachable motions
-            motion->RS.push_back(newmotion);
+            motion->RS.push_back(newState);
+
+            LO += range/10.0;
          } 
 }
 
@@ -117,17 +121,12 @@ This function selects a reachable motion from the reachable set generated in the
 bool ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const Motion* randmotion)
 {
 
-    // grab the states of the two motions
-    const base::State *nearState = nearmotion->state;
-    const base::State *randState = randmotion->state;
 
-    // calculate the current distance between the two states
-    const double nearDistance = si_->distance(nearState, randState);
-
-    // define a "minimum" distance. this is the "threshold."
+    // grab the states of the two motions calculate the current 
+    // distance between the two states. this is the "threshold."
     // as new states are found and the new distance compared, we
     // check if the new distance is smaller than the current distance.
-    double minimumDistance = nearDistance;
+    double currentDistance = si_->distance(nearmotion->state, randmotion->state);
 
     // generate the reachable set of the near motion.
     const auto& reach = nearmotion->RS;
@@ -136,12 +135,12 @@ bool ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const
     for(size_t i = 0; i < reach.size(); ++i)
     {
         // calculate the new distance between the reachable set motion and rmotion
-        double newDistance = si_->distance(reach[i]->state, randmotion->state);
+        double newDistance = si_->distance(reach[i], randmotion->state);
 
-        // if the new distance is shorter than the minimum distance, return true.
-        if(newDistance < minimumDistance)
+        // if the new distance is shorter than the current distance, return flase.
+        if(newDistance < currentDistance)
         {
-            minimumDistance = newDistance;
+            currentDistance = newDistance;
             return false;
         }
     }
@@ -209,6 +208,7 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
   
         if (addIntermediateStates_)
         {
+            // this is Jennifer Barry's code so I won't be touching it apart from adding GRS to it
             std::vector<base::State *> pstates;
             cd = siC_->propagateWhileValid(nmotion->state, rctrl, cd, pstates, true);
   
