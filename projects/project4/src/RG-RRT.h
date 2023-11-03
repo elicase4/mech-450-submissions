@@ -1,7 +1,7 @@
 ///////////////////////////////////////
 // COMP/ELEC/MECH 450/550
 // Project 4
-// Authors: Santi Parra-Vargas
+// Authors: Santi Parra-Vargas, Eli Case, Jason Ye
 //////////////////////////////////////
 
 /*

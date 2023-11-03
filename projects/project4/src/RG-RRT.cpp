@@ -1,7 +1,7 @@
 ///////////////////////////////////////
 // COMP/ELEC/MECH 450/550
 // Project 4
-// Authors: Santi Parra-Vargas
+// Authors: Santi Parra-Vargas, Eli Case, Jason Ye
 //////////////////////////////////////
 
 // Our .h file
@@ -20,11 +20,17 @@ ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner
 {
      specs_.approximateSolutions = true;
      siC_ = si.get();
-  
-     Planner::declareParam<double>("goal_bias", this, &RGRRT::setGoalBias, &RGRRT::getGoalBias, "0.:.05:1.");
-     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates,
-                                "0,1");
 
+     Planner::declareParam<double>("goal_bias", this, &RGRRT::setGoalBias, &RGRRT::getGoalBias, "0.:.05:1.");
+     Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates, "0,1");
+
+     /*
+     const std::vector<double> diff = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds().getDifference();
+     for(double d : diff)
+     {
+         control_offset.push_back(d/ double(this->RSIZE));
+     }
+     */
 }
 
 // Destructor 
@@ -74,10 +80,9 @@ void ompl::control::RGRRT::freeMemory(){
 /*
 Generate Reachable Set (GRS) Function
 
-This function performs the generation of the reachable set for the planner. This is completely new and separate from 
-the rest of the code that is primarily just taken from the RRT file in the OMPL library. This function is called in 
-the solve function written below.
+This function performs the generation of the reachable set for the planner. This is new funcitonality added to the planner.
 */
+
 void ompl::control::RGRRT::GRS(Motion* motion) {
 
     // Create vector of doubles (called LO and HI) that include the bounds, and find the range of the bounds
