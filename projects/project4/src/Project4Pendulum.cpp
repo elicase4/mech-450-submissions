@@ -243,10 +243,10 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
 void benchmarkPendulum(ompl::control::SimpleSetupPtr& ss)
 {
     // Declare the number of times to run the planner
-    int run_count = 25;
+    int run_count = 20;
 
     // Declare the run time and memory limits
-    double runtime_lim = 200.0;
+    double runtime_lim = 100.0;
     double memory_lim = 50000.0;
 
     // Setup the planner

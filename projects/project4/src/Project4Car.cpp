@@ -294,10 +294,10 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
 void benchmarkCar(ompl::control::SimpleSetupPtr& ss)
 {
     // Declare the number of times to run the planner
-    int run_count = 25;
+    int run_count = 15;
 
     // Declare the run time and memory limits
-    double runtime_lim = 300.0;
+    double runtime_lim = 125.0;
     double memory_lim = 100000.0;
 
     // Setup the planner
