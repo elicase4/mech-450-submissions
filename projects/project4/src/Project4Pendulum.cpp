@@ -230,6 +230,7 @@ void planPendulum(ompl::control::SimpleSetupPtr& ss, int choice, std::string geo
         if (!geopathFilePath.empty())
         {
             std::ofstream pathFile(geopathFilePath);
+            pathGeometric.interpolate();
             pathGeometric.printAsMatrix(pathFile);
         }
     }

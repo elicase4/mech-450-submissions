@@ -280,6 +280,7 @@ void planCar(ompl::control::SimpleSetupPtr& ss, int choice, std::string geopathF
         if (!geopathFilePath.empty())
         {
             std::ofstream pathFile(geopathFilePath);
+            pathGeometric.interpolate();
             pathGeometric.printAsMatrix(pathFile);
         }
     }

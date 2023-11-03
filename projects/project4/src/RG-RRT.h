@@ -165,12 +165,6 @@ namespace ompl
 
             // Select a Reachable Motion (NEW)
             bool selectReachableMotion(const Motion* near, const Motion* rand);
-
-            // Number of reachable states to sampler
-            unsigned int REACHSTATE_SIZE = 20;
-
-            // Vector of control offsets within the prescibed bounds
-            std::vector<double> control_offset;
         };
          
     }  // namespace control 
