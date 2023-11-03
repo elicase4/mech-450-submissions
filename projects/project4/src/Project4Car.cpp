@@ -328,7 +328,7 @@ int main(int argc, char ** argv)
     std::string boundsFilePath;
     std::string startgoalFilePath;
     std::string envFilePath;
-    
+   
     // Parse input arguments
     if (argc == 5)
     {
@@ -341,7 +341,7 @@ int main(int argc, char ** argv)
     {
         std::cout << "To save the output, please provide the file names for the planning path and planning bounds in the format shown below:" << "\n" << "\n" << "PROGRAM_NAME [file path to geometric path output] [file path to bounds output] [file path to start goal output] [file path to environment output]" << "\n" << std::endl;
     }
-    
+
     // Make environment obstacles
     std::vector<Rectangle> obstacles;
     makeStreet(obstacles, envFilePath);
