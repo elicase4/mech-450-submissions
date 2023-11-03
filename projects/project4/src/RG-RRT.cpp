@@ -24,13 +24,11 @@ ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner
      Planner::declareParam<double>("goal_bias", this, &RGRRT::setGoalBias, &RGRRT::getGoalBias, "0.:.05:1.");
      Planner::declareParam<bool>("intermediate_states", this, &RGRRT::setIntermediateStates, &RGRRT::getIntermediateStates, "0,1");
 
-     /*
-     const std::vector<double> diff = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds().getDifference();
-     for(double d : diff)
+     const std::vector<double> controlDiff = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds().getDifference();
+     for(double d : controlDiff)
      {
-         control_offset.push_back(d/ double(this->RSIZE));
+         control_offset.push_back(d/ double(this->REACHSTATE_SIZE));
      }
-     */
 }
 
 // Destructor 
@@ -83,30 +81,35 @@ Generate Reachable Set (GRS) Function
 This function performs the generation of the reachable set for the planner. This is new funcitonality added to the planner.
 */
 
-void ompl::control::RGRRT::GRS(Motion* motion) {
+void ompl::control::RGRRT::generateReachableSet(Motion* motion) {
 
     // Create vector of doubles (called LO and HI) that include the bounds, and find the range of the bounds
     auto bounds = siC_->getControlSpace()->as<RealVectorControlSpace>()->getBounds();
-    double LO = bounds.low[0];
-    double HI = bounds.high[0];
-
-    double range = HI - LO;
+    std::vector<double> low_bound = bounds.low;
+    std::vector<double> high_bound = bounds.high;
 
     // Propagate the input states for a range between -10 and 10 over a for loop. 
-    for (double propagation = LO; propagation <= HI; propagation += range/10.0)
+    for (unsigned long i = 0; i < this->REACHSTATE_SIZE; i++)
     {
         Motion *newmotion = new Motion(siC_);
 
         siC_->copyControl(newmotion->control, motion->control);
 
-        double *casting = motion->control->as<RealVectorControlSpace::ControlType>()->values;
-        casting[0] = propagation;
-
+        double* control = motion->control->as<RealVectorControlSpace::ControlType>()->values;
+        control[0] = low_bound[0] + control_offset[0]*(i+1);
+        for (unsigned long j = 1; j < low_bound.size(); j++)
+        {
+            control[j] = high_bound[j]/2.0;
+        } 
+        
         // Perform the propagation
         newmotion->steps = siC_->propagateWhileValid(motion->state, newmotion->control, 1, newmotion->state);
 
         // Add the propagation to the reachable motions
-        motion->RS.push_back(newmotion);
+        if (motion->steps != 0)
+        {
+            motion->RS.push_back(newmotion);
+        }
     }
 }
 
@@ -119,7 +122,7 @@ This function selects a reachable motion from the reachable set generated in the
 
 */
 
-int ompl::control::RGRRT::SRM(const Motion* nearmotion, const Motion* randmotion)
+bool ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const Motion* randmotion)
 {
 
     // grab the states of the two motions
@@ -166,9 +169,8 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
         si_->copyState(motion->state, st);
         siC_->nullControl(motion->control);
 
-        // NEW: generate the reachable set using the above function
-        GRS(motion);
-        ///////////////////////////////////////////////////////
+        // generate the reachable set using the above function
+        generateReachableSet(motion);
 
         nn_->add(motion);
     }
@@ -193,27 +195,27 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
     auto *rmotion = new Motion(siC_);
     base::State *rstate = rmotion->state;
     Control *rctrl = rmotion->control;
+
+    int srm_flag = false;
   
     while(ptc == false)
     {
-
-        // sample random state (with goal biasing)
-        if (goal_s && rng_.uniform01() < goalBias_ && goal_s->canSample())
-             goal_s->sampleGoal(rstate);
-        else
-            sampler_->sampleUniform(rstate);
+        Motion *nmotion;
         
-        // find closest state in the tree
-        Motion *nmotion = nn_->nearest(rmotion);
-
-        /////////////////////// NEW
-        // if SRM returns true then skip the rest of the loop.
-        if (SRM(nmotion, rmotion))
+        for (int i = 0; i < 50 && srm_flag == 0; i++)
         {
-            continue;
-        }
-        //////////////////////////
+            // sample random state (with goal biasing)
+            if (goal_s && rng_.uniform01() < goalBias_ && goal_s->canSample())
+                goal_s->sampleGoal(rstate);
+            else
+                sampler_->sampleUniform(rstate);
         
+            // find closest state in the tree
+            nmotion = nn_->nearest(rmotion);
+
+            srm_flag = selectReachableMotion(nmotion, rmotion);
+        }
+       
         // sample a random control that attempts to go towards the random state, and also sample a control duration 
         unsigned int cd = controlSampler_->sampleTo(rctrl, nmotion->control, nmotion->state, rmotion->state);
   
@@ -238,9 +240,10 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
                     motion->steps = 1;
                     motion->parent = lastmotion;
                     lastmotion = motion;
-                    // NEW: generate the reachable set using the above function
-                    GRS(motion);
-                    ///////////////////////////////////////////////////////
+                    
+                    // generate the reachable set using the above function
+                    generateReachableSet(motion);
+                    
                     nn_->add(motion);
                     double dist = 0.0;
                     solved = goal->isSatisfied(motion->state, &dist);
@@ -277,9 +280,16 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
                 siC_->copyControl(motion->control, rctrl);
                 motion->steps = cd;
                 motion->parent = nmotion;
-                // NEW: generate the reachable set using the above function
-                GRS(motion);
-                ///////////////////////////////////////////////////////
+                
+                // generate the reachable set using the above function
+                generateReachableSet(motion);
+
+                if(srm_flag == 0)
+                {
+                    si_->freeState(rstate);
+                    siC_->freeControl(rctrl);
+                }
+               
                 nn_->add(motion);
                 double dist = 0.0;
                 bool solv = goal->isSatisfied(motion->state, &dist);

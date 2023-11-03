@@ -161,10 +161,16 @@ namespace ompl
             RNG rng_;
 
             // Generate the Reachable Set (NEW)
-            void GRS(Motion* const m);
+            void generateReachableSet(Motion* const m);
 
             // Select a Reachable Motion (NEW)
-            int SRM(const Motion* near, const Motion* rand);
+            bool selectReachableMotion(const Motion* near, const Motion* rand);
+
+            // Number of reachable states to sampler
+            unsigned int REACHSTATE_SIZE = 20;
+
+            // Vector of control offsets within the prescibed bounds
+            std::vector<double> control_offset;
         };
          
     }  // namespace control 
