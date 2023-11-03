@@ -8,7 +8,7 @@
 The following code builds the RG-RRT planner.
 
 It follows the general structure of the RTP planner used in Project 3, but tailored for Project 4.
-
+e
 Change log:
 
     -- Built the basis using RRT and minor edits. - Santi, 10/22/23 6 pm
@@ -124,7 +124,7 @@ namespace ompl
                     Motion *parent{nullptr};
 
                     // Create the reachable set (this is what separates RGRRT from the "normal" RRT!!)
-                    std::vector<Motion *> ReachS;
+                    std::vector<Motion *> RS;
             };
 
             // Free the planner's memory after
@@ -160,11 +160,11 @@ namespace ompl
             // Random number generator
             RNG rng_;
 
-            // Generate the reachable set (NEW)
+            // Generate the Reachable Set (NEW)
             void GRS(Motion* const m);
 
-            // Select a reachable motion (NEW)
-            int selectReachableMotion(const Motion* near, const Motion* rand);
+            // Select a Reachable Motion (NEW)
+            int SRM(const Motion* near, const Motion* rand);
         };
          
     }  // namespace control 

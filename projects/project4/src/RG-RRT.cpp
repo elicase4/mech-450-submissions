@@ -13,6 +13,7 @@
 #include "ompl/base/goals/GoalSampleableRegion.h"
 #include "ompl/control/spaces/RealVectorControlSpace.h"
 #include <limits>
+#include <iostream>
 
 // Constructor
 ompl::control::RGRRT::RGRRT(const SpaceInformationPtr &si) : ompl::base::Planner(si, "RGRRT")
@@ -100,7 +101,7 @@ void ompl::control::RGRRT::GRS(Motion* motion) {
         newmotion->steps = siC_->propagateWhileValid(motion->state, newmotion->control, 1, newmotion->state);
 
         // Add the propagation to the reachable motions
-        motion->ReachS.push_back(newmotion);
+        motion->RS.push_back(newmotion);
     }
 }
 
@@ -113,29 +114,38 @@ This function selects a reachable motion from the reachable set generated in the
 
 */
 
-int ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const Motion* randmotion)
+int ompl::control::RGRRT::SRM(const Motion* nearmotion, const Motion* randmotion)
 {
 
+    // grab the states of the two motions
     const base::State *nearState = nearmotion->state;
     const base::State *randState = randmotion->state;
 
+    // calculate the current distance between the two states
     const double nearDistance = si_->distance(nearState, randState);
+
+    // define a "minimum" distance. this is the "threshold."
+    // as new states are found and the new distance compared, we
+    // check if the new distance is smaller than the current distance.
     double minimumDistance = nearDistance;
 
-    const auto& reach = nearmotion->ReachS;
-    int id = -1;
+    // generate the reachable set of the near motion.
+    const auto& reach = nearmotion->RS;
 
+    // for each motion in the reachable set,
     for(size_t i = 0; i < reach.size(); ++i)
     {
+        // calculate the new distance between the reachable set motion and rmotion
         double newDistance = si_->distance(reach[i]->state, randmotion->state);
 
+        // if the new distance is shorter than the minimum distance, return true.
         if(newDistance < minimumDistance)
         {
             minimumDistance = newDistance;
-            id = i;
+            return false;
         }
     }
-    return id;
+    return true;
 }
 
 // Main solve function
@@ -191,27 +201,14 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
         // find closest state in the tree
         Motion *nmotion = nn_->nearest(rmotion);
 
-
-        // if rmotion (rand) is too far from nmotion (near), select a motion from nmotion's reachable set that brings us closer to rmotion
-        while(selectReachableMotion(nmotion, rmotion))
+        /////////////////////// NEW
+        // if SRM returns true then skip the rest of the loop.
+        if (SRM(nmotion, rmotion))
         {
-            int id = selectReachableMotion(nmotion, rmotion);
-
-            // get the motion determined by its id
-            Motion* newmotion = nmotion->ReachS[id];
-
-            // generate a new motion
-            auto *motion = new Motion(siC_);
-            si_->copyState(motion->state, newmotion->state);
-            siC_->copyControl(motion->control, newmotion->control);
-            motion->parent = nmotion;
-            motion->steps = 1;
-
-            nn_->add(motion);
-
-            nmotion = motion;
-
+            continue;
         }
+        //////////////////////////
+        
         // sample a random control that attempts to go towards the random state, and also sample a control duration 
         unsigned int cd = controlSampler_->sampleTo(rctrl, nmotion->control, nmotion->state, rmotion->state);
   

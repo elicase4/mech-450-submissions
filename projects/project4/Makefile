@@ -5,7 +5,7 @@ INCLUDE_FLAGS=`pkg-config --cflags ompl eigen3`
 LD_FLAGS=-lcollisionchecking `pkg-config --libs ompl`
 
 # The c++ compiler to invoke
-CXX=c++
+CXX=c++        # g++ -Og -g i used this for gdb debugging
 all: Project4Pendulum Project4Car
 
 clean:
