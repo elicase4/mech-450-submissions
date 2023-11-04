@@ -101,9 +101,9 @@ void makeStreet(std::vector<Rectangle>& obstacles, std::string envFilePath)
 
     // Build Rectangle 2
     rec2.x = 6;
-    rec2.y = 2;
-    rec2.width = 4;
-    rec2.height = 3;
+    rec2.y = 3;
+    rec2.width = 3;
+    rec2.height = 1;
     
     // Build Rectangle 3
     rec3.x = 6;
