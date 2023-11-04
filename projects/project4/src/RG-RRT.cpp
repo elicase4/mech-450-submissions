@@ -141,10 +141,10 @@ bool ompl::control::RGRRT::selectReachableMotion(const Motion* nearmotion, const
         if(newDistance < currentDistance)
         {
             currentDistance = newDistance;
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 // Main solve function
@@ -198,7 +198,7 @@ ompl::base::PlannerStatus ompl::control::RGRRT::solve(const base::PlannerTermina
         // find closest state in the tree
         Motion* nmotion = nn_->nearest(rmotion);
 
-        if (selectReachableMotion(nmotion, rmotion))
+        if (!selectReachableMotion(nmotion, rmotion))
         {
             continue;
         }
