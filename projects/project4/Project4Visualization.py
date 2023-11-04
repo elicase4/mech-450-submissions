@@ -86,7 +86,7 @@ def gen_path_vis(path_arr, env_arr, env_bounds, start_goal, pendulum, car, file_
     # Plot the car orientation
     if (car):
         car_length = float(car_length)
-        for i in range(0, path_arr.shape[0], 5):
+        for i in range(0, path_arr.shape[0], 20):
             car_rect = plt.Rectangle((path_arr[i,0] - 0.5*car_length, path_arr[i,1] - 0.5*car_length), width=car_length, height=car_length, color="red", transform=Affine2D().rotate_deg_around(*(path_arr[i,0], path_arr[i,1]), (180/3.14159)*path_arr[i,2])+ax.transData)
             ax.add_patch(car_rect)
 
