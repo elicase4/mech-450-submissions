@@ -179,7 +179,7 @@ Subject: \@title
 
        \item Since only boolean statements can be encoded in PDDL, one cannot add additional information about the objects involved in the task planner. For example, if one block has a larger size than the other block, if one block is much further away from the other blocks and should be moved last, etc. As a result one cannot create heuristics to optimize the solution of a task planning problem in PDDL for certain problem conditions. 
 
-           Regardless, PDDL is very flexible, as an problem can be encoded into PDDL, if it is constructed with the proper logical framework. Thus, PDDL encodes a series of logical steps to complete a problem that are generalizable to all problems, but the proper logical framework for a task planning problem can be difficult to construct in some cases.
+           Regardless, PDDL is very flexible, as an problem can be encoded into PDDL, if it is constructed with the proper logical framework. For a task planning problem, we need to decompose the problem into individual actions that require logical preconditions and generate logical effects to apply in a certain sequence to complete each task. Thus, PDDL encodes a series of logical steps to complete a problem that are generalizable to all problems, but the proper logical framework for a task planning problem can be difficult to construct in some cases.
 
    \end{enumerate} % End of Problem 4 subpoints
 
